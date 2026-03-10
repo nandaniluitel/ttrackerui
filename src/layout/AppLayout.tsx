@@ -1,0 +1,91 @@
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { getRole, logout } from "@/lib/auth";
+
+function NavItem({ to, label }: { to: string; label: string }) {
+  return (
+    <NavLink
+      to={to}
+      end={to === "/"}
+      className={({ isActive }) =>
+        [
+          "block rounded-md px-3 py-2 text-sm transition",
+          isActive
+            ? "bg-muted text-foreground font-medium"
+            : "text-muted-foreground hover:bg-muted/50 hover:text-foreground",
+        ].join(" ")
+      }
+    >
+      {label}
+    </NavLink>
+  );
+}
+
+export default function AppLayout() {
+  const nav = useNavigate();
+  const role = getRole();
+
+  function handleLogout() {
+    logout();
+    nav("/login");
+  }
+
+  return (
+    <div className="min-h-screen grid grid-cols-[260px_1fr] bg-background">
+      {/* Sidebar */}
+      <aside className="border-r bg-background">
+        <div className="h-14 px-4 flex items-center border-b">
+          <div className="text-sm font-semibold tracking-tight">ttracker</div>
+        </div>
+
+        <div className="p-3 space-y-6">
+          <div className="space-y-1">
+            <div className="px-3 text-xs font-semibold text-muted-foreground">
+              WORK
+            </div>
+            <NavItem to="/board" label="Board" />
+            <NavItem to="/epics-board" label="Epics Board" />
+            <NavItem to="/" label="Dashboard" />
+            <NavItem to="/tickets" label="Tickets" />
+            <NavItem to="/sprints" label="Sprints" />
+            <NavItem to="/epics" label="Epics" />
+          </div>
+
+          <div className="space-y-2">
+            <div className="px-3 text-xs font-semibold text-muted-foreground">
+              ACTIONS
+            </div>
+
+            {role === "ADMIN" || role === "SCRUM_MASTER" ? (
+              <Button variant="outline" className="w-full justify-start">
+                Manage Sprints
+              </Button>
+            ) : null}
+
+            <Button className="w-full justify-start">Create Ticket</Button>
+          </div>
+        </div>
+      </aside>
+
+      {/* Main */}
+      <div className="flex flex-col">
+        <header className="h-14 border-b bg-background px-4 flex items-center justify-between">
+          <div className="text-sm text-muted-foreground">Workspace</div>
+
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-muted-foreground">
+              Role: {role ?? "Unknown"}
+            </span>
+            <Button variant="outline" size="sm" onClick={handleLogout}>
+              Logout
+            </Button>
+          </div>
+        </header>
+
+        <main className="p-6">
+          <Outlet />
+        </main>
+      </div>
+    </div>
+  );
+}
