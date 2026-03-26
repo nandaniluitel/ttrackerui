@@ -14,6 +14,7 @@ import TicketsPage from "./pages/TicketsPage";
 import SprintsPage from "./pages/SprintsPage";
 import BoardPage from "./pages/BoardPage";
 import EpicsBoardPage from "./pages/EpicsBoardPage";
+import RegisterPage from "./pages/RegisterPage";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -36,9 +37,13 @@ const router = createBrowserRouter([
     element: <LoginPage />,
   },
   {
-      path: "/health",
-      element : <HealthPage />
-  }
+    path: "/health",
+    element: <HealthPage />,
+  },
+  {
+    path: "/register",
+    element: <RegisterPage />,
+  },
 ]);
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
