@@ -8,6 +8,7 @@ import DashboardPage from "@/pages/DashboardPage";
 import LoginPage from "@/pages/LoginPage";
 import RequireAuth from "./auth/RequireAuth";
 import EpicsPage from "./pages/EpicsPage";
+import HealthPage from "./pages/HealthPage";
 
 import TicketsPage from "./pages/TicketsPage";
 import SprintsPage from "./pages/SprintsPage";
@@ -34,6 +35,10 @@ const router = createBrowserRouter([
     path: "/login",
     element: <LoginPage />,
   },
+  {
+      path: "/health",
+      element : <HealthPage />
+  }
 ]);
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
