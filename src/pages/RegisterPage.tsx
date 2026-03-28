@@ -17,7 +17,7 @@ type JwtPayload = {
 
 export default function RegisterPage() {
   const nav = useNavigate();
-
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -31,6 +31,7 @@ export default function RegisterPage() {
 
     try {
       const res = await api.post<RegisterResponse>("/auth/register", {
+        name,
         email,
         password,
       });
@@ -66,7 +67,12 @@ export default function RegisterPage() {
         className="w-full max-w-sm space-y-4 rounded-lg border p-6"
       >
         <h1 className="text-xl font-semibold">Register</h1>
-
+        <Input
+          placeholder="Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          autoComplete="name"
+        />
         <Input
           placeholder="Email"
           value={email}
