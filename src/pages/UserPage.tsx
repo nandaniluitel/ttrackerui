@@ -1,106 +1,99 @@
 import { useEffect, useState } from "react";
-
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-
+import { Button } from "@/components/ui/button";
 import {
   fetchUsers,
   changeUserRole,
   type User,
+  type UserRole,
 } from "@/features/users/users.api";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
-function Badge({
-  tone = "neutral",
-  children,
-}: {
-  tone?: "neutral" | "blue" | "green";
-  children: React.ReactNode;
-}) {
-  const toneClass: Record<string, string> = {
-    neutral: "bg-slate-100 text-slate-700 border-slate-200",
-    blue: "bg-blue-100 text-blue-700 border-blue-200",
-    green: "bg-emerald-100 text-emerald-700 border-emerald-200",
-  };
-
-  return (
-    <span
-      className={`inline-flex items-center rounded-md border px-2 py-1 text-xs font-medium ${toneClass[tone]}`}
-    >
-      {children}
-    </span>
-  );
-}
-
-function RoleBadge({ role }: { role: string }) {
-  const tone = role === "ADMIN" ? "blue" : "neutral";
-  return <Badge tone={tone}>{role}</Badge>;
-}
+const ROLES: UserRole[] = ["USER", "ADMIN", "SCRUM_MASTER"];
 
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [updatingId, setUpdatingId] = useState<number | null>(null);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [selectedRole, setSelectedRole] = useState<UserRole>("USER");
+  const [saving, setSaving] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
 
   useEffect(() => {
     let alive = true;
-
     (async () => {
       try {
         setLoading(true);
+        setError(null);
         const data = await fetchUsers();
         if (!alive) return;
         setUsers(data);
       } catch (e: any) {
         if (!alive) return;
-        setError(
-          e?.response?.data?.message || e?.message || "Failed to load users."
-        );
+        const msg =
+          e?.response?.data?.message ||
+          (typeof e?.response?.data === "string" ? e.response.data : null) ||
+          e?.message ||
+          "Failed to load users.";
+        setError(String(msg));
       } finally {
         if (alive) setLoading(false);
       }
     })();
-
     return () => {
       alive = false;
     };
   }, []);
 
-  async function handleChangeRole(id: number, role: string) {
-    setUpdatingId(id);
-    setError(null);
+  function openEditUser(u: User) {
+    setEditingUser(u);
+    setSelectedRole(u.role);
+    setFormError(null);
+  }
 
+  async function handleChangeRole() {
+    if (!editingUser) return;
+    setSaving(true);
     try {
-      await changeUserRole(id, role);
-      const fresh = await fetchUsers();
-      setUsers(fresh);
+      const updated = await changeUserRole(editingUser.id, selectedRole);
+      setUsers((prev) => prev.map((u) => (u.id === updated.id ? updated : u)));
+      setEditingUser(null);
     } catch (e: any) {
-      setError(
-        e?.response?.data?.message || e?.message || "Failed to update role."
-      );
+      const msg =
+        e?.response?.data?.message || e?.message || "Failed to change role.";
+      setFormError(String(msg));
     } finally {
-      setUpdatingId(null);
+      setSaving(false);
     }
   }
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="space-y-1">
-        <p className="text-sm text-muted-foreground">Admin / Users</p>
-        <h1 className="text-3xl font-semibold tracking-tight">Users</h1>
-        <p className="text-sm text-muted-foreground">Manage users and roles.</p>
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="space-y-1">
+          <p className="text-sm font-medium text-muted-foreground">
+            Admin / Users
+          </p>
+          <h1 className="text-3xl font-semibold tracking-tight">Users</h1>
+          <p className="text-sm text-muted-foreground">
+            Manage users and their roles.
+          </p>
+        </div>
       </div>
 
       {/* Table */}
       <div className="overflow-hidden rounded-xl border bg-background shadow-sm">
         <div className="border-b px-5 py-4">
           <h2 className="text-base font-semibold">User List</h2>
+          <p className="text-sm text-muted-foreground">
+            View and manage all registered users.
+          </p>
         </div>
 
         {error ? (
@@ -111,23 +104,29 @@ export default function UsersPage() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full min-w-[700px] text-sm">
               <thead className="bg-muted/40 text-left">
                 <tr className="border-b">
-                  <th className="px-5 py-3">ID</th>
-                  <th className="px-5 py-3">Name</th>
-                  <th className="px-5 py-3">Email</th>
-                  <th className="px-5 py-3">Role</th>
-                  <th className="px-5 py-3 text-right">Actions</th>
+                  <th className="px-5 py-3 font-medium text-muted-foreground">
+                    Name
+                  </th>
+                  <th className="px-5 py-3 font-medium text-muted-foreground">
+                    Email
+                  </th>
+                  <th className="px-5 py-3 font-medium text-muted-foreground">
+                    Role
+                  </th>
+                  <th className="px-5 py-3 font-medium text-muted-foreground text-right">
+                    Actions
+                  </th>
                 </tr>
               </thead>
-
               <tbody>
                 {users.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={5}
                       className="px-5 py-10 text-muted-foreground"
+                      colSpan={4}
                     >
                       No users found.
                     </td>
@@ -138,30 +137,23 @@ export default function UsersPage() {
                       key={u.id}
                       className="border-b last:border-0 hover:bg-muted/30"
                     >
-                      <td className="px-5 py-4">{u.id}</td>
-                      <td className="px-5 py-4">{u.name}</td>
+                      <td className="px-5 py-4 font-medium">{u.name}</td>
                       <td className="px-5 py-4 text-muted-foreground">
                         {u.email}
                       </td>
-
                       <td className="px-5 py-4">
-                        <RoleBadge role={u.role} />
+                        <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold">
+                          {u.role}
+                        </span>
                       </td>
-
                       <td className="px-5 py-4 text-right">
-                        <Select
-                          value={u.role}
-                          onValueChange={(v) => handleChangeRole(u.id, v)}
-                          disabled={updatingId === u.id}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => openEditUser(u)}
                         >
-                          <SelectTrigger className="h-8 w-[140px]">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="USER">USER</SelectItem>
-                            <SelectItem value="ADMIN">ADMIN</SelectItem>
-                          </SelectContent>
-                        </Select>
+                          Change Role
+                        </Button>
                       </td>
                     </tr>
                   ))
@@ -171,6 +163,47 @@ export default function UsersPage() {
           </div>
         )}
       </div>
+
+      {/* Change Role Dialog */}
+      <Dialog
+        open={!!editingUser}
+        onOpenChange={(o) => !o && setEditingUser(null)}
+      >
+        <DialogContent className="sm:max-w-[400px]">
+          <DialogHeader>
+            <DialogTitle>Change role for {editingUser?.name}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Role</label>
+              <select
+                className="w-full rounded-md border px-3 py-2 text-sm"
+                value={selectedRole}
+                onChange={(e) => setSelectedRole(e.target.value as UserRole)}
+              >
+                {ROLES.map((r) => (
+                  <option key={r} value={r}>
+                    {r}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {formError && (
+              <div className="text-sm text-red-600">{formError}</div>
+            )}
+
+            <div className="flex justify-end gap-2 pt-2">
+              <Button variant="outline" onClick={() => setEditingUser(null)}>
+                Cancel
+              </Button>
+              <Button disabled={saving} onClick={handleChangeRole}>
+                {saving ? "Saving..." : "Save"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

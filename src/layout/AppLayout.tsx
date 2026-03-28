@@ -43,12 +43,13 @@ export default function AppLayout() {
             <div className="px-3 text-xs font-semibold text-muted-foreground">
               WORK
             </div>
-            <NavItem to="/board" label="Board" />
-            <NavItem to="/epics-board" label="Epics Board" />
             <NavItem to="/" label="Dashboard" />
+            <NavItem to="/board" label="SPrint Board" />
+            <NavItem to="/epics-board" label="Epics Board" />
             <NavItem to="/tickets" label="Tickets" />
             <NavItem to="/sprints" label="Sprints" />
             <NavItem to="/epics" label="Epics" />
+            {role === "ADMIN" && <NavItem to="/users" label="Users" />}
           </div>
 
           <div className="space-y-2">
