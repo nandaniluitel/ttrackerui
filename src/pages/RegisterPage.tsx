@@ -1,16 +1,12 @@
 import { useState } from "react";
 import { useNavigate, Navigate, Link } from "react-router-dom";
-import { jwtDecode } from "jwt-decode";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { api } from "@/lib/api";
-import { getToken, setRole, setToken, type UserRole } from "@/lib/auth";
+import { getToken } from "@/lib/auth";
 import { logger } from "@/lib/logger";
-
-type RegisterResponse = { token: string };
-type JwtPayload = { role?: UserRole };
 
 const registerSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -34,7 +30,6 @@ export default function RegisterPage() {
     setError(null);
     setFieldErrors({});
 
-    // 1. Client-side validation
     const result = registerSchema.safeParse({ name, email, password });
     if (!result.success) {
       const flat = result.error.flatten().fieldErrors;
@@ -51,23 +46,12 @@ export default function RegisterPage() {
     logger.info(`[RegisterPage] Register attempt for email=${email}`);
 
     try {
-      const res = await api.post<RegisterResponse>(
-        "/auth/register",
-        result.data
+      await api.post("/auth/register", result.data);
+      logger.info(
+        "[RegisterPage] Registration successful, redirecting to login"
       );
-      const token = res.data.token;
-
-      if (!token) throw new Error("No token received from server");
-
-      setToken(token);
-      logger.info("[RegisterPage] Token received and stored");
-
-      const payload = jwtDecode<JwtPayload>(token);
-      if (payload.role) setRole(payload.role);
-
-      nav("/");
+      nav("/login");
     } catch (err: any) {
-      // Handle field-level errors from backend (@Valid)
       const backendFields = err?.response?.data?.fields;
       if (backendFields) {
         setFieldErrors(backendFields);
