@@ -46,6 +46,10 @@ const router = createBrowserRouter([
     path: "/register",
     element: <RegisterPage />,
   },
+  {
+    path: "/users",
+    element: <UsersPage />,
+  },
 ]);
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
