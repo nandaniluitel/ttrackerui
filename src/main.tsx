@@ -15,6 +15,7 @@ import SprintsPage from "./pages/SprintsPage";
 import BoardPage from "./pages/BoardPage";
 import EpicsBoardPage from "./pages/EpicsBoardPage";
 import RegisterPage from "./pages/RegisterPage";
+import UsersPage from "./pages/UserPage";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -30,6 +31,7 @@ const router = createBrowserRouter([
       { path: "tickets", element: <TicketsPage /> },
       { path: "sprints", element: <SprintsPage /> },
       { path: "epics", element: <EpicsPage /> },
+      { path: "users", element: <UsersPage /> },
     ],
   },
   {
