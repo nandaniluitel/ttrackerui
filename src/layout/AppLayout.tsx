@@ -36,6 +36,7 @@ export default function AppLayout() {
       <aside className="border-r bg-background">
         <div className="h-14 px-4 flex items-center border-b">
           <div className="text-sm font-semibold tracking-tight">ttracker</div>
+          <NavItem to="/profile" label="Profile" />
         </div>
 
         <div className="p-3 space-y-6">
@@ -44,7 +45,7 @@ export default function AppLayout() {
               WORK
             </div>
             <NavItem to="/" label="Dashboard" />
-            <NavItem to="/board" label="SPrint Board" />
+            <NavItem to="/board" label="Sprint Board" />
             <NavItem to="/epics-board" label="Epics Board" />
             <NavItem to="/tickets" label="Tickets" />
             <NavItem to="/sprints" label="Sprints" />
