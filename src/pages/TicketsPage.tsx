@@ -171,8 +171,8 @@ export default function TicketsPage() {
         setSprints(sprintData);
         setEpics(epicData);
         setUsers(userData);
-      } catch {
-        // non-blocking
+      } catch (e) {
+        console.error("Failed to load lookups:", e);
       }
     })();
 
