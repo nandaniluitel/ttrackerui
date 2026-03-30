@@ -543,6 +543,34 @@ export default function BoardPage() {
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
           <h1 className="text-3xl font-semibold tracking-tight">
             Sprint Board
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Start date</label>
+                <Input
+                  type="date"
+                  value={newSprintStart}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    setNewSprintStart(v);
+                    if (v && !newSprintEndTouched) {
+                      setNewSprintEnd(addDays(v, 14));
+                    }
+                  }}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">End date</label>
+                <Input
+                  type="date"
+                  value={newSprintEnd}
+                  onChange={(e) => {
+                    setNewSprintEndTouched(true);
+                    setNewSprintEnd(e.target.value);
+                  }}
+                />
+              </div>
+            </div>
           </h1>
 
           <Select
@@ -606,37 +634,6 @@ export default function BoardPage() {
                         value={newSprintGoal}
                         onChange={(e) => setNewSprintGoal(e.target.value)}
                       />
-                    </div>
-
-                    <div className="grid gap-3 sm:grid-cols-2">
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium">
-                          Start date
-                        </label>
-                        <Input
-                          type="date"
-                          value={newSprintStart}
-                          onChange={(e) => {
-                            const v = e.target.value;
-                            setNewSprintStart(v);
-                            if (v && !newSprintEndTouched) {
-                              setNewSprintEnd(addDays(v, 14));
-                            }
-                          }}
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium">End date</label>
-                        <Input
-                          type="date"
-                          value={newSprintEnd}
-                          onChange={(e) => {
-                            setNewSprintEndTouched(true);
-                            setNewSprintEnd(e.target.value);
-                          }}
-                        />
-                      </div>
                     </div>
 
                     {newSprintError ? (
