@@ -28,14 +28,56 @@ import {
 } from "@/components/ui/select";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 
-import { Ticket as TicketIcon, User, ChevronRight } from "lucide-react";
+import { Ticket as TicketIcon, User, ChevronRight, Layers } from "lucide-react";
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
-function priorityTone(priority: unknown) {
+function priorityCardStyle(priority: unknown): {
+  bg: string;
+  border: string;
+  iconBg: string;
+  iconColor: string;
+  accent: string;
+} {
   const v = String(priority ?? "MEDIUM").toUpperCase();
-  if (v === "CRITICAL" || v === "HIGH")
-    return "bg-red-100 text-red-700 border-red-200";
+  if (v === "CRITICAL")
+    return {
+      bg: "bg-red-50",
+      border: "border-red-200",
+      iconBg: "bg-red-100",
+      iconColor: "text-red-600",
+      accent: "bg-red-500",
+    };
+  if (v === "HIGH")
+    return {
+      bg: "bg-orange-50",
+      border: "border-orange-200",
+      iconBg: "bg-orange-100",
+      iconColor: "text-orange-600",
+      accent: "bg-orange-500",
+    };
+  if (v === "MEDIUM")
+    return {
+      bg: "bg-amber-50",
+      border: "border-amber-200",
+      iconBg: "bg-amber-100",
+      iconColor: "text-amber-600",
+      accent: "bg-amber-500",
+    };
+  // LOW
+  return {
+    bg: "bg-slate-50",
+    border: "border-slate-200",
+    iconBg: "bg-slate-100",
+    iconColor: "text-slate-500",
+    accent: "bg-slate-400",
+  };
+}
+
+function priorityBadgeStyle(priority: unknown) {
+  const v = String(priority ?? "MEDIUM").toUpperCase();
+  if (v === "CRITICAL") return "bg-red-100 text-red-700 border-red-200";
+  if (v === "HIGH") return "bg-orange-100 text-orange-700 border-orange-200";
   if (v === "MEDIUM") return "bg-amber-100 text-amber-700 border-amber-200";
   return "bg-slate-100 text-slate-600 border-slate-200";
 }
@@ -81,7 +123,7 @@ function ticketStatusTone(s: Ticket["status"]) {
 function PriorityBadge({ priority }: { priority: EpicPriority }) {
   return (
     <span
-      className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium capitalize ${priorityTone(
+      className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold capitalize ${priorityBadgeStyle(
         priority
       )}`}
     >
@@ -117,13 +159,13 @@ function TicketStatusBadge({ status }: { status: Ticket["status"] }) {
 function Avatar({ userId }: { userId: number | null | undefined }) {
   if (userId == null) return null;
   return (
-    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-indigo-100 text-xs font-bold text-indigo-700 ring-2 ring-white">
+    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-white/80 text-xs font-bold text-slate-700 ring-2 ring-white shadow-sm">
       U{userId}
     </div>
   );
 }
 
-// ─── Epic row ─────────────────────────────────────────────────────────────────
+// ─── Epic card ────────────────────────────────────────────────────────────────
 
 function EpicRow({
   epic,
@@ -134,44 +176,60 @@ function EpicRow({
   ticketCount: number;
   onClick: () => void;
 }) {
+  const style = priorityCardStyle(epic.priority);
+
   return (
     <button
       type="button"
       onClick={onClick}
-      className="group w-full text-left rounded-xl border bg-white px-5 py-4 shadow-sm transition hover:shadow-md hover:border-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+      className={`group w-full text-left rounded-xl border ${style.bg} ${style.border} shadow-sm transition-all hover:shadow-md hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 overflow-hidden`}
     >
-      <div className="flex items-center justify-between gap-4">
-        {/* left: icon + title + description */}
-        <div className="flex items-center gap-4 min-w-0 flex-1">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
-            <TicketIcon className="h-4 w-4" />
+      <div className="flex items-stretch">
+        {/* Left accent bar */}
+        <div className={`w-1 shrink-0 ${style.accent}`} />
+
+        {/* Card content */}
+        <div className="flex flex-1 items-center gap-4 px-5 py-4">
+          {/* Icon */}
+          <div
+            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${style.iconBg} ${style.iconColor}`}
+          >
+            <Layers className="h-5 w-5" />
           </div>
 
+          {/* Title + description */}
           <div className="min-w-0 flex-1">
             <div className="truncate text-sm font-semibold text-slate-900">
               {epic.title}
             </div>
             {epic.description ? (
-              <p className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">
+              <p className="mt-0.5 line-clamp-1 text-xs text-slate-500">
                 {epic.description}
               </p>
             ) : null}
           </div>
-        </div>
 
-        {/* right: badges + ticket count + avatar + chevron */}
-        <div className="flex shrink-0 items-center gap-2">
-          <StatusBadge status={(epic as any).status} />
-          <PriorityBadge priority={epic.priority} />
+          {/* Right side: badges + meta */}
+          <div className="flex shrink-0 items-center gap-2">
+            <StatusBadge status={(epic as any).status} />
+            <PriorityBadge priority={epic.priority} />
 
-          <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 text-xs text-slate-600">
-            <TicketIcon className="h-3 w-3" />
-            {ticketCount}
-          </span>
+            <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white/70 px-2.5 py-0.5 text-xs font-medium text-slate-600">
+              <TicketIcon className="h-3 w-3" />
+              {ticketCount}
+            </span>
 
-          <Avatar userId={epic.assigneeUserId} />
+            {epic.assigneeUserId != null ? (
+              <Avatar userId={epic.assigneeUserId} />
+            ) : (
+              <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white/70 px-2.5 py-0.5 text-xs text-slate-400">
+                <User className="h-3 w-3" />
+                Unassigned
+              </span>
+            )}
 
-          <ChevronRight className="h-4 w-4 text-slate-300 transition group-hover:text-slate-500 group-hover:translate-x-0.5" />
+            <ChevronRight className="h-4 w-4 text-slate-300 transition group-hover:text-slate-500 group-hover:translate-x-0.5" />
+          </div>
         </div>
       </div>
     </button>
@@ -215,10 +273,8 @@ export default function EpicsBoardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Drawer — only set when user clicks an epic
   const [viewingEpic, setViewingEpic] = useState<Epic | null>(null);
 
-  // Create dialog
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
@@ -253,13 +309,11 @@ export default function EpicsBoardPage() {
     load();
   }, []);
 
-  // Newest first
   const sortedEpics = useMemo(
     () => [...epics].sort((a, b) => b.id - a.id),
     [epics]
   );
 
-  // Tickets for the viewed epic
   const epicTickets = useMemo(() => {
     if (!viewingEpic) return [];
     return tickets
@@ -267,7 +321,6 @@ export default function EpicsBoardPage() {
       .sort((a, b) => a.id - b.id);
   }, [tickets, viewingEpic]);
 
-  // Ticket count per epic
   const ticketCountByEpicId = useMemo(() => {
     const m = new Map<number, number>();
     for (const t of tickets) {
@@ -311,7 +364,6 @@ export default function EpicsBoardPage() {
                 + New Epic
               </Button>
 
-              {/* Only mount Dialog when open — prevents invisible backdrop */}
               {open && (
                 <Dialog open={open} onOpenChange={setOpen}>
                   <DialogContent className="sm:max-w-[560px]">
@@ -475,7 +527,7 @@ export default function EpicsBoardPage() {
         </div>
       ) : sortedEpics.length === 0 ? (
         <div className="flex min-h-[240px] flex-col items-center justify-center rounded-xl border border-dashed text-sm text-muted-foreground gap-2">
-          <TicketIcon className="h-8 w-8 opacity-30" />
+          <Layers className="h-8 w-8 opacity-30" />
           <span>No epics yet. Create one to get started.</span>
         </div>
       ) : (
@@ -491,7 +543,7 @@ export default function EpicsBoardPage() {
         </div>
       )}
 
-      {/* Only mount Sheet when an epic is selected — prevents invisible backdrop blocking clicks */}
+      {/* Tickets drawer — only mounted when an epic is selected */}
       {viewingEpic && (
         <Sheet
           open={!!viewingEpic}
@@ -499,8 +551,12 @@ export default function EpicsBoardPage() {
         >
           <SheetContent side="right" className="w-full sm:max-w-[540px] p-0">
             <div className="flex h-full flex-col">
-              {/* Drawer header */}
-              <div className="border-b px-6 py-5">
+              {/* Drawer header — tinted by priority */}
+              <div
+                className={`border-b px-6 py-5 ${
+                  priorityCardStyle(viewingEpic.priority).bg
+                }`}
+              >
                 <div className="flex flex-wrap items-center gap-2 mb-2">
                   <StatusBadge status={(viewingEpic as any).status} />
                   <PriorityBadge priority={viewingEpic.priority} />
@@ -509,12 +565,12 @@ export default function EpicsBoardPage() {
                   {viewingEpic.title}
                 </h2>
                 {viewingEpic.description && (
-                  <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
+                  <p className="mt-1 text-sm text-slate-500 leading-relaxed">
                     {viewingEpic.description}
                   </p>
                 )}
 
-                <div className="mt-3 flex items-center gap-3 text-xs text-muted-foreground">
+                <div className="mt-3 flex items-center gap-3 text-xs text-slate-500">
                   <span className="inline-flex items-center gap-1">
                     <User className="h-3 w-3" />
                     {viewingEpic.assigneeUserId != null
@@ -530,12 +586,12 @@ export default function EpicsBoardPage() {
               </div>
 
               {/* Ticket list */}
-              <div className="flex-1 overflow-y-auto px-6 py-4">
+              <div className="flex-1 overflow-y-auto px-6 py-4 bg-slate-50">
                 <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Tickets
                 </p>
                 {epicTickets.length === 0 ? (
-                  <div className="flex min-h-[160px] flex-col items-center justify-center rounded-xl border border-dashed text-sm text-muted-foreground gap-2">
+                  <div className="flex min-h-[160px] flex-col items-center justify-center rounded-xl border border-dashed bg-white text-sm text-muted-foreground gap-2">
                     <TicketIcon className="h-6 w-6 opacity-30" />
                     <span>No tickets linked to this epic.</span>
                   </div>
@@ -549,7 +605,7 @@ export default function EpicsBoardPage() {
               </div>
 
               {/* Footer */}
-              <div className="border-t px-6 py-4 flex justify-end">
+              <div className="border-t px-6 py-4 flex justify-end bg-white">
                 <Button variant="outline" onClick={() => setViewingEpic(null)}>
                   Close
                 </Button>
