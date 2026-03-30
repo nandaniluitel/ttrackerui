@@ -36,27 +36,29 @@ import {
 } from "lucide-react";
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
-
 function priorityCardStyle(priority: unknown) {
   const v = String(priority ?? "MEDIUM").toUpperCase();
+
   if (v === "CRITICAL")
     return {
-      bg: "bg-gradient-to-br from-red-50 to-red-100",
-      border: "border-red-200",
-      iconBg: "bg-red-100",
-      iconColor: "text-red-600",
-      accent: "bg-red-500",
-      dot: "bg-red-400",
+      bg: "bg-gradient-to-br from-pink-50 via-rose-50 to-red-100",
+      border: "border-rose-200",
+      iconBg: "bg-rose-100",
+      iconColor: "text-rose-600",
+      accent: "bg-gradient-to-r from-pink-500 via-rose-500 to-red-500",
+      dot: "bg-rose-400",
     };
+
   if (v === "HIGH")
     return {
-      bg: "bg-gradient-to-br from-orange-50 to-orange-100",
-      border: "border-orange-200",
-      iconBg: "bg-orange-100",
-      iconColor: "text-orange-600",
-      accent: "bg-orange-500",
-      dot: "bg-orange-400",
+      bg: "bg-gradient-to-br from-rose-50 via-pink-50 to-fuchsia-100",
+      border: "border-pink-200",
+      iconBg: "bg-pink-100",
+      iconColor: "text-pink-600",
+      accent: "bg-gradient-to-r from-rose-400 via-pink-500 to-fuchsia-500",
+      dot: "bg-pink-400",
     };
+
   if (v === "MEDIUM")
     return {
       bg: "bg-gradient-to-br from-amber-50 to-amber-100",
@@ -66,6 +68,7 @@ function priorityCardStyle(priority: unknown) {
       accent: "bg-amber-500",
       dot: "bg-amber-400",
     };
+
   return {
     bg: "bg-gradient-to-br from-slate-50 to-slate-100",
     border: "border-slate-200",
@@ -184,45 +187,39 @@ function EpicCard({
     <button
       type="button"
       onClick={onClick}
-      className={`group relative w-full text-left rounded-2xl border ${style.bg} ${style.border} shadow-sm transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 overflow-hidden`}
+      className={`group relative w-full overflow-hidden rounded-2xl border ${style.bg} ${style.border} text-left shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400`}
     >
-      {/* Top accent bar */}
-      <div className={`h-1 w-full ${style.accent}`} />
+      <div className={`h-1.5 w-full ${style.accent}`} />
 
-      <div className="flex flex-col gap-3 p-5">
-        {/* Top row: icon + menu dots */}
-        <div className="flex items-start justify-between">
+      <div className="p-4">
+        <div className="flex items-start justify-between gap-3">
           <div
-            className={`flex h-10 w-10 items-center justify-center rounded-xl ${style.iconBg} ${style.iconColor} shadow-sm`}
+            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl ${style.iconBg} ${style.iconColor} shadow-sm`}
           >
             <Layers className="h-5 w-5" />
           </div>
-          <MoreHorizontal className="h-4 w-4 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
+
+          <MoreHorizontal className="h-4 w-4 text-slate-400 opacity-70 transition-opacity group-hover:opacity-100" />
         </div>
 
-        {/* Title */}
-        <div className="flex-1">
-          <h3 className="text-sm font-semibold text-slate-900 leading-snug line-clamp-2">
+        <div className="mt-3">
+          <h3 className="text-sm font-semibold leading-snug text-slate-900 line-clamp-2">
             {epic.title}
           </h3>
+
           {epic.description ? (
-            <p className="mt-1.5 line-clamp-2 text-xs text-slate-500 leading-relaxed">
+            <p className="mt-1.5 line-clamp-2 text-xs leading-relaxed text-slate-500">
               {epic.description}
             </p>
           ) : null}
         </div>
 
-        {/* Divider */}
-        <div className="h-px bg-black/5" />
-
-        {/* Bottom row: status + priority badges */}
-        <div className="flex flex-wrap items-center gap-1.5">
+        <div className="mt-4 flex flex-wrap items-center gap-1.5">
           <StatusBadge status={(epic as any).status} />
           <PriorityBadge priority={epic.priority} />
         </div>
 
-        {/* Footer: ticket count + assignee */}
-        <div className="flex items-center justify-between">
+        <div className="mt-4 flex items-center justify-between border-t border-black/5 pt-3">
           <span className="inline-flex items-center gap-1.5 text-xs text-slate-500">
             <TicketIcon className="h-3.5 w-3.5" />
             <span className="font-medium">{ticketCount}</span>
