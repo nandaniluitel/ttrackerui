@@ -28,49 +28,51 @@ import {
 } from "@/components/ui/select";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 
-import { Ticket as TicketIcon, User, ChevronRight, Layers } from "lucide-react";
+import {
+  Ticket as TicketIcon,
+  User,
+  Layers,
+  MoreHorizontal,
+} from "lucide-react";
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
-function priorityCardStyle(priority: unknown): {
-  bg: string;
-  border: string;
-  iconBg: string;
-  iconColor: string;
-  accent: string;
-} {
+function priorityCardStyle(priority: unknown) {
   const v = String(priority ?? "MEDIUM").toUpperCase();
   if (v === "CRITICAL")
     return {
-      bg: "bg-red-50",
+      bg: "bg-gradient-to-br from-red-50 to-red-100",
       border: "border-red-200",
       iconBg: "bg-red-100",
       iconColor: "text-red-600",
       accent: "bg-red-500",
+      dot: "bg-red-400",
     };
   if (v === "HIGH")
     return {
-      bg: "bg-orange-50",
+      bg: "bg-gradient-to-br from-orange-50 to-orange-100",
       border: "border-orange-200",
       iconBg: "bg-orange-100",
       iconColor: "text-orange-600",
       accent: "bg-orange-500",
+      dot: "bg-orange-400",
     };
   if (v === "MEDIUM")
     return {
-      bg: "bg-amber-50",
+      bg: "bg-gradient-to-br from-amber-50 to-amber-100",
       border: "border-amber-200",
       iconBg: "bg-amber-100",
       iconColor: "text-amber-600",
       accent: "bg-amber-500",
+      dot: "bg-amber-400",
     };
-  // LOW
   return {
-    bg: "bg-slate-50",
+    bg: "bg-gradient-to-br from-slate-50 to-slate-100",
     border: "border-slate-200",
     iconBg: "bg-slate-100",
     iconColor: "text-slate-500",
     accent: "bg-slate-400",
+    dot: "bg-slate-300",
   };
 }
 
@@ -159,15 +161,15 @@ function TicketStatusBadge({ status }: { status: Ticket["status"] }) {
 function Avatar({ userId }: { userId: number | null | undefined }) {
   if (userId == null) return null;
   return (
-    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-white/80 text-xs font-bold text-slate-700 ring-2 ring-white shadow-sm">
+    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-xs font-bold text-slate-700 ring-2 ring-white shadow">
       U{userId}
     </div>
   );
 }
 
-// ─── Epic card ────────────────────────────────────────────────────────────────
+// ─── Epic card (grid item) ────────────────────────────────────────────────────
 
-function EpicRow({
+function EpicCard({
   epic,
   ticketCount,
   onClick,
@@ -182,54 +184,59 @@ function EpicRow({
     <button
       type="button"
       onClick={onClick}
-      className={`group w-full text-left rounded-xl border ${style.bg} ${style.border} shadow-sm transition-all hover:shadow-md hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 overflow-hidden`}
+      className={`group relative w-full text-left rounded-2xl border ${style.bg} ${style.border} shadow-sm transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 overflow-hidden`}
     >
-      <div className="flex items-stretch">
-        {/* Left accent bar */}
-        <div className={`w-1 shrink-0 ${style.accent}`} />
+      {/* Top accent bar */}
+      <div className={`h-1 w-full ${style.accent}`} />
 
-        {/* Card content */}
-        <div className="flex flex-1 items-center gap-4 px-5 py-4">
-          {/* Icon */}
+      <div className="flex flex-col gap-3 p-5">
+        {/* Top row: icon + menu dots */}
+        <div className="flex items-start justify-between">
           <div
-            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${style.iconBg} ${style.iconColor}`}
+            className={`flex h-10 w-10 items-center justify-center rounded-xl ${style.iconBg} ${style.iconColor} shadow-sm`}
           >
             <Layers className="h-5 w-5" />
           </div>
+          <MoreHorizontal className="h-4 w-4 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
+        </div>
 
-          {/* Title + description */}
-          <div className="min-w-0 flex-1">
-            <div className="truncate text-sm font-semibold text-slate-900">
-              {epic.title}
-            </div>
-            {epic.description ? (
-              <p className="mt-0.5 line-clamp-1 text-xs text-slate-500">
-                {epic.description}
-              </p>
-            ) : null}
-          </div>
+        {/* Title */}
+        <div className="flex-1">
+          <h3 className="text-sm font-semibold text-slate-900 leading-snug line-clamp-2">
+            {epic.title}
+          </h3>
+          {epic.description ? (
+            <p className="mt-1.5 line-clamp-2 text-xs text-slate-500 leading-relaxed">
+              {epic.description}
+            </p>
+          ) : null}
+        </div>
 
-          {/* Right side: badges + meta */}
-          <div className="flex shrink-0 items-center gap-2">
-            <StatusBadge status={(epic as any).status} />
-            <PriorityBadge priority={epic.priority} />
+        {/* Divider */}
+        <div className="h-px bg-black/5" />
 
-            <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white/70 px-2.5 py-0.5 text-xs font-medium text-slate-600">
-              <TicketIcon className="h-3 w-3" />
-              {ticketCount}
+        {/* Bottom row: status + priority badges */}
+        <div className="flex flex-wrap items-center gap-1.5">
+          <StatusBadge status={(epic as any).status} />
+          <PriorityBadge priority={epic.priority} />
+        </div>
+
+        {/* Footer: ticket count + assignee */}
+        <div className="flex items-center justify-between">
+          <span className="inline-flex items-center gap-1.5 text-xs text-slate-500">
+            <TicketIcon className="h-3.5 w-3.5" />
+            <span className="font-medium">{ticketCount}</span>
+            <span>{ticketCount === 1 ? "ticket" : "tickets"}</span>
+          </span>
+
+          {epic.assigneeUserId != null ? (
+            <Avatar userId={epic.assigneeUserId} />
+          ) : (
+            <span className="inline-flex items-center gap-1 text-xs text-slate-400">
+              <User className="h-3 w-3" />
+              Unassigned
             </span>
-
-            {epic.assigneeUserId != null ? (
-              <Avatar userId={epic.assigneeUserId} />
-            ) : (
-              <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white/70 px-2.5 py-0.5 text-xs text-slate-400">
-                <User className="h-3 w-3" />
-                Unassigned
-              </span>
-            )}
-
-            <ChevronRight className="h-4 w-4 text-slate-300 transition group-hover:text-slate-500 group-hover:translate-x-0.5" />
-          </div>
+          )}
         </div>
       </div>
     </button>
@@ -340,7 +347,7 @@ export default function EpicsBoardPage() {
           <h1 className="text-3xl font-semibold tracking-tight">Epics</h1>
           <p className="text-sm text-muted-foreground">
             {sortedEpics.length} {sortedEpics.length === 1 ? "epic" : "epics"} —
-            click one to view its tickets
+            click a card to view its tickets
           </p>
         </div>
 
@@ -515,25 +522,25 @@ export default function EpicsBoardPage() {
         </div>
       )}
 
-      {/* Epic list */}
+      {/* Epic grid */}
       {loading ? (
-        <div className="space-y-3">
-          {[1, 2, 3].map((i) => (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
             <div
               key={i}
-              className="h-16 animate-pulse rounded-xl border bg-slate-100"
+              className="h-48 animate-pulse rounded-2xl border bg-slate-100"
             />
           ))}
         </div>
       ) : sortedEpics.length === 0 ? (
-        <div className="flex min-h-[240px] flex-col items-center justify-center rounded-xl border border-dashed text-sm text-muted-foreground gap-2">
+        <div className="flex min-h-[240px] flex-col items-center justify-center rounded-2xl border border-dashed text-sm text-muted-foreground gap-2">
           <Layers className="h-8 w-8 opacity-30" />
           <span>No epics yet. Create one to get started.</span>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {sortedEpics.map((epic) => (
-            <EpicRow
+            <EpicCard
               key={epic.id}
               epic={epic}
               ticketCount={ticketCountByEpicId.get(epic.id) ?? 0}
@@ -551,24 +558,43 @@ export default function EpicsBoardPage() {
         >
           <SheetContent side="right" className="w-full sm:max-w-[540px] p-0">
             <div className="flex h-full flex-col">
-              {/* Drawer header — tinted by priority */}
+              {/* Drawer header tinted by priority */}
               <div
                 className={`border-b px-6 py-5 ${
                   priorityCardStyle(viewingEpic.priority).bg
                 }`}
               >
-                <div className="flex flex-wrap items-center gap-2 mb-2">
+                {/* Top accent */}
+                <div
+                  className={`absolute top-0 left-0 right-0 h-1 ${
+                    priorityCardStyle(viewingEpic.priority).accent
+                  }`}
+                />
+
+                <div className="flex flex-wrap items-center gap-2 mb-3">
                   <StatusBadge status={(viewingEpic as any).status} />
                   <PriorityBadge priority={viewingEpic.priority} />
                 </div>
-                <h2 className="text-lg font-semibold leading-snug text-slate-900">
-                  {viewingEpic.title}
-                </h2>
-                {viewingEpic.description && (
-                  <p className="mt-1 text-sm text-slate-500 leading-relaxed">
-                    {viewingEpic.description}
-                  </p>
-                )}
+
+                <div className="flex items-start gap-3">
+                  <div
+                    className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
+                      priorityCardStyle(viewingEpic.priority).iconBg
+                    } ${priorityCardStyle(viewingEpic.priority).iconColor}`}
+                  >
+                    <Layers className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-semibold leading-snug text-slate-900">
+                      {viewingEpic.title}
+                    </h2>
+                    {viewingEpic.description && (
+                      <p className="mt-1 text-sm text-slate-500 leading-relaxed">
+                        {viewingEpic.description}
+                      </p>
+                    )}
+                  </div>
+                </div>
 
                 <div className="mt-3 flex items-center gap-3 text-xs text-slate-500">
                   <span className="inline-flex items-center gap-1">
