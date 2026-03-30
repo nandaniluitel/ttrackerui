@@ -518,6 +518,7 @@ export default function BoardPage() {
         prev.map((t) => (t.id === ticketId ? { ...t, status: prevStatus } : t))
       );
       const msg =
+        e?.response?.data?.error || // ← add this first
         e?.response?.data?.message ||
         (typeof e?.response?.data === "string" ? e.response.data : null) ||
         e?.message ||

@@ -191,6 +191,7 @@ export default function TicketsPage() {
       setTickets(fresh);
     } catch (e: any) {
       const msg =
+        e?.response?.data?.error || // ← add this first
         e?.response?.data?.message ||
         (typeof e?.response?.data === "string" ? e.response.data : null) ||
         e?.message ||
