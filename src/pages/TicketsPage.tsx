@@ -28,6 +28,7 @@ import {
 } from "@/features/tickets/tickets.api";
 import { fetchSprints, type Sprint } from "@/features/sprints/sprints.api";
 import { fetchEpics, type Epic } from "@/features/epics/epics.api";
+import { fetchUsers, type User } from "@/features/users/users.api";
 
 function keyFromId(id: number) {
   return `TT-${id}`;
@@ -93,6 +94,7 @@ export default function TicketsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [updatingStatusId, setUpdatingStatusId] = useState<number | null>(null);
+  const [users, setUsers] = useState<User[]>([]);
 
   // edit/view
   const [editing, setEditing] = useState<Ticket | null>(null);
@@ -160,13 +162,15 @@ export default function TicketsPage() {
 
     (async () => {
       try {
-        const [sprintData, epicData] = await Promise.all([
+        const [sprintData, epicData, userData] = await Promise.all([
           fetchSprints(),
           fetchEpics(),
+          fetchUsers(),
         ]);
         if (!alive) return;
         setSprints(sprintData);
         setEpics(epicData);
+        setUsers(userData);
       } catch {
         // non-blocking
       }
@@ -232,6 +236,11 @@ export default function TicketsPage() {
     epics.forEach((e) => m.set(e.id, e.title));
     return m;
   }, [epics]);
+  const userNameById = useMemo(() => {
+    const m = new Map<number, string>();
+    users.forEach((u) => m.set(u.id, u.name));
+    return m;
+  }, [users]);
 
   const filtered = useMemo(() => {
     const query = q.trim().toLowerCase();
@@ -398,16 +407,25 @@ export default function TicketsPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">
-                      Assignee User ID
-                    </label>
-                    <Input
-                      type="number"
-                      min={1}
-                      placeholder="optional (e.g. 7)"
-                      value={assigneeUserId}
-                      onChange={(e) => setAssigneeUserId(e.target.value)}
-                    />
+                    <label className="text-sm font-medium">Assignee</label>
+                    <Select
+                      value={assigneeUserId || "none"}
+                      onValueChange={(v) =>
+                        setAssigneeUserId(v === "none" ? "" : v)
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Unassigned" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">Unassigned</SelectItem>
+                        {users.map((u) => (
+                          <SelectItem key={u.id} value={String(u.id)}>
+                            {u.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   {/* EPIC dropdown: hide DONE, but if editing and epic is DONE, show it disabled */}
@@ -646,7 +664,7 @@ export default function TicketsPage() {
               <SelectItem value="unassigned">Unassigned</SelectItem>
               {assigneeOptions.map((id) => (
                 <SelectItem key={id} value={String(id)}>
-                  User #{id}
+                  {userNameById.get(id) ?? `User #${id}`}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -813,7 +831,8 @@ export default function TicketsPage() {
 
                       <td className="px-5 py-4 text-muted-foreground">
                         {t.assigneeUserId
-                          ? `User #${t.assigneeUserId}`
+                          ? userNameById.get(t.assigneeUserId) ??
+                            `User #${t.assigneeUserId}`
                           : "Unassigned"}
                       </td>
 
@@ -901,7 +920,8 @@ export default function TicketsPage() {
                           </div>
                           <div className="mt-1 text-sm">
                             {viewing.assigneeUserId
-                              ? `User #${viewing.assigneeUserId}`
+                              ? userNameById.get(viewing.assigneeUserId) ??
+                                `User #${viewing.assigneeUserId}`
                               : "Unassigned"}
                           </div>
                         </div>
