@@ -78,6 +78,7 @@ function priorityCardStyle(priority: unknown) {
     dot: "bg-slate-300",
   };
 }
+const [viewingTicket, setViewingTicket] = useState<Ticket | null>(null);
 
 function priorityBadgeStyle(priority: unknown) {
   const v = String(priority ?? "MEDIUM").toUpperCase();
@@ -239,31 +240,136 @@ function EpicCard({
     </button>
   );
 }
+function TicketDetailsDialog({
+  ticket,
+  open,
+  onOpenChange,
+}: {
+  ticket: Ticket | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  if (!ticket) return null;
+
+  const extra = ticket as Ticket & {
+    assigneeUserId?: number | null;
+    priority?: string | null;
+    storyId?: number | null;
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[640px] rounded-2xl">
+        <DialogHeader>
+          <div className="mb-2 flex flex-wrap items-center gap-2">
+            <span className="inline-flex items-center rounded-full border bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-600">
+              TT-{ticket.id}
+            </span>
+            <TicketStatusBadge status={ticket.status} />
+          </div>
+
+          <DialogTitle>{ticket.title}</DialogTitle>
+        </DialogHeader>
+
+        <div className="space-y-4">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="rounded-xl border bg-slate-50 p-4">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Epic ID
+              </p>
+              <p className="mt-1 text-sm font-medium text-slate-900">
+                {ticket.epicId ?? "—"}
+              </p>
+            </div>
+
+            <div className="rounded-xl border bg-slate-50 p-4">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Assignee
+              </p>
+              <p className="mt-1 text-sm font-medium text-slate-900">
+                {extra.assigneeUserId != null
+                  ? `User #${extra.assigneeUserId}`
+                  : "Unassigned"}
+              </p>
+            </div>
+
+            {extra.priority ? (
+              <div className="rounded-xl border bg-slate-50 p-4">
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  Priority
+                </p>
+                <p className="mt-1 text-sm font-medium text-slate-900">
+                  {extra.priority}
+                </p>
+              </div>
+            ) : null}
+
+            {extra.storyId != null ? (
+              <div className="rounded-xl border bg-slate-50 p-4">
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  Story ID
+                </p>
+                <p className="mt-1 text-sm font-medium text-slate-900">
+                  {extra.storyId}
+                </p>
+              </div>
+            ) : null}
+          </div>
+
+          <div className="rounded-2xl border bg-white p-4">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              Description
+            </p>
+            <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-700">
+              {ticket.description?.trim() ||
+                "No description available for this ticket."}
+            </p>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 // ─── Ticket row in drawer ─────────────────────────────────────────────────────
 
-function TicketRow({ ticket }: { ticket: Ticket }) {
+function TicketRow({
+  ticket,
+  onClick,
+}: {
+  ticket: Ticket;
+  onClick: () => void;
+}) {
   return (
-    <div className="rounded-lg border bg-white px-4 py-3">
+    <button
+      type="button"
+      onClick={onClick}
+      className="w-full rounded-xl border bg-white px-4 py-3 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+    >
       <div className="flex items-start justify-between gap-3">
-        <div className="flex flex-col gap-1 min-w-0">
+        <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-muted-foreground shrink-0">
+            <span className="shrink-0 text-xs font-semibold text-muted-foreground">
               TT-{ticket.id}
             </span>
             <span className="truncate text-sm font-medium text-slate-900">
               {ticket.title}
             </span>
           </div>
+
           {ticket.description ? (
-            <p className="line-clamp-1 text-xs text-muted-foreground">
+            <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">
               {ticket.description}
             </p>
           ) : null}
         </div>
-        <TicketStatusBadge status={ticket.status} />
+
+        <div className="flex items-center gap-2">
+          <TicketStatusBadge status={ticket.status} />
+          <span className="text-xs text-slate-400">View</span>
+        </div>
       </div>
-    </div>
+    </button>
   );
 }
 
@@ -551,7 +657,12 @@ export default function EpicsBoardPage() {
       {viewingEpic && (
         <Sheet
           open={!!viewingEpic}
-          onOpenChange={(o) => !o && setViewingEpic(null)}
+          onOpenChange={(o) => {
+            if (!o) {
+              setViewingTicket(null);
+              setViewingEpic(null);
+            }
+          }}
         >
           <SheetContent side="right" className="w-full sm:max-w-[540px] p-0">
             <div className="flex h-full flex-col">
@@ -621,7 +732,11 @@ export default function EpicsBoardPage() {
                 ) : (
                   <div className="space-y-2">
                     {epicTickets.map((ticket) => (
-                      <TicketRow key={ticket.id} ticket={ticket} />
+                      <TicketRow
+                        key={ticket.id}
+                        ticket={ticket}
+                        onClick={() => setViewingTicket(ticket)}
+                      />
                     ))}
                   </div>
                 )}
@@ -637,6 +752,11 @@ export default function EpicsBoardPage() {
           </SheetContent>
         </Sheet>
       )}
+      <TicketDetailsDialog
+        ticket={viewingTicket}
+        open={!!viewingTicket}
+        onOpenChange={(o) => !o && setViewingTicket(null)}
+      />
     </div>
   );
 }
