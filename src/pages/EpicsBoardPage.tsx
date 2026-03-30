@@ -3,10 +3,8 @@ import { useEffect, useMemo, useState } from "react";
 import {
   fetchEpics,
   createEpic,
-  updateEpic,
   type Epic,
   type EpicPriority,
-  type EpicStatus,
 } from "@/features/epics/epics.api";
 import { fetchTickets, type Ticket } from "@/features/tickets/tickets.api";
 
@@ -30,14 +28,9 @@ import {
 } from "@/components/ui/select";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 
-import {
-  MoreHorizontal,
-  Ticket as TicketIcon,
-  User,
-  ChevronRight,
-} from "lucide-react";
+import { Ticket as TicketIcon, User, ChevronRight } from "lucide-react";
 
-// ─── helpers ────────────────────────────────────────────────────────────────
+// ─── helpers ─────────────────────────────────────────────────────────────────
 
 function priorityTone(priority: unknown) {
   const v = String(priority ?? "MEDIUM").toUpperCase();
@@ -83,12 +76,7 @@ function ticketStatusTone(s: Ticket["status"]) {
   return "bg-slate-100 text-slate-600 border-slate-200";
 }
 
-function initials(userId: number | null | undefined) {
-  if (userId == null) return null;
-  return `U${userId}`;
-}
-
-// ─── sub-components ──────────────────────────────────────────────────────────
+// ─── badges & avatar ──────────────────────────────────────────────────────────
 
 function PriorityBadge({ priority }: { priority: EpicPriority }) {
   return (
@@ -127,16 +115,15 @@ function TicketStatusBadge({ status }: { status: Ticket["status"] }) {
 }
 
 function Avatar({ userId }: { userId: number | null | undefined }) {
-  const label = initials(userId);
-  if (!label) return null;
+  if (userId == null) return null;
   return (
     <div className="flex h-7 w-7 items-center justify-center rounded-full bg-indigo-100 text-xs font-bold text-indigo-700 ring-2 ring-white">
-      {label}
+      U{userId}
     </div>
   );
 }
 
-// ─── Epic row card ────────────────────────────────────────────────────────────
+// ─── Epic row ─────────────────────────────────────────────────────────────────
 
 function EpicRow({
   epic,
@@ -153,50 +140,37 @@ function EpicRow({
       onClick={onClick}
       className="group w-full text-left rounded-xl border bg-white px-5 py-4 shadow-sm transition hover:shadow-md hover:border-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
     >
-      <div className="flex items-start justify-between gap-4">
-        {/* left */}
-        <div className="flex min-w-0 flex-1 flex-col gap-2">
-          {/* title row */}
-          <div className="flex items-center gap-2">
-            <div className="min-w-0 truncate text-sm font-semibold text-slate-900">
-              {epic.title}
-            </div>
+      <div className="flex items-center justify-between gap-4">
+        {/* left: icon + title + description */}
+        <div className="flex items-center gap-4 min-w-0 flex-1">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+            <TicketIcon className="h-4 w-4" />
           </div>
 
-          {/* description */}
-          {epic.description ? (
-            <p className="line-clamp-2 text-xs text-muted-foreground leading-relaxed">
-              {epic.description}
-            </p>
-          ) : null}
-
-          {/* badges row */}
-          <div className="flex flex-wrap items-center gap-2 pt-1">
-            <StatusBadge status={(epic as any).status} />
-            <PriorityBadge priority={epic.priority} />
-
-            <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 text-xs text-slate-600">
-              <TicketIcon className="h-3 w-3" />
-              {ticketCount} {ticketCount === 1 ? "ticket" : "tickets"}
-            </span>
-
-            {epic.assigneeUserId != null ? (
-              <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 text-xs text-slate-600">
-                <User className="h-3 w-3" />
-                User #{epic.assigneeUserId}
-              </span>
-            ) : (
-              <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 text-xs text-slate-400">
-                <User className="h-3 w-3" />
-                Unassigned
-              </span>
-            )}
+          <div className="min-w-0 flex-1">
+            <div className="truncate text-sm font-semibold text-slate-900">
+              {epic.title}
+            </div>
+            {epic.description ? (
+              <p className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">
+                {epic.description}
+              </p>
+            ) : null}
           </div>
         </div>
 
-        {/* right */}
-        <div className="flex shrink-0 items-center gap-3 pt-0.5">
+        {/* right: badges + ticket count + avatar + chevron */}
+        <div className="flex shrink-0 items-center gap-2">
+          <StatusBadge status={(epic as any).status} />
+          <PriorityBadge priority={epic.priority} />
+
+          <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 text-xs text-slate-600">
+            <TicketIcon className="h-3 w-3" />
+            {ticketCount}
+          </span>
+
           <Avatar userId={epic.assigneeUserId} />
+
           <ChevronRight className="h-4 w-4 text-slate-300 transition group-hover:text-slate-500 group-hover:translate-x-0.5" />
         </div>
       </div>
@@ -204,7 +178,7 @@ function EpicRow({
   );
 }
 
-// ─── Ticket row inside drawer ─────────────────────────────────────────────────
+// ─── Ticket row in drawer ─────────────────────────────────────────────────────
 
 function TicketRow({ ticket }: { ticket: Ticket }) {
   return (
@@ -244,7 +218,7 @@ export default function EpicsBoardPage() {
   // Drawer
   const [viewingEpic, setViewingEpic] = useState<Epic | null>(null);
 
-  // Create epic dialog
+  // Create dialog
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
@@ -486,7 +460,7 @@ export default function EpicsBoardPage() {
           {[1, 2, 3].map((i) => (
             <div
               key={i}
-              className="h-24 animate-pulse rounded-xl border bg-slate-100"
+              className="h-16 animate-pulse rounded-xl border bg-slate-100"
             />
           ))}
         </div>
