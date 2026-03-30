@@ -36,6 +36,7 @@ import {
 } from "lucide-react";
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
+
 function priorityCardStyle(priority: unknown) {
   const v = String(priority ?? "MEDIUM").toUpperCase();
 
@@ -78,7 +79,6 @@ function priorityCardStyle(priority: unknown) {
     dot: "bg-slate-300",
   };
 }
-const [viewingTicket, setViewingTicket] = useState<Ticket | null>(null);
 
 function priorityBadgeStyle(priority: unknown) {
   const v = String(priority ?? "MEDIUM").toUpperCase();
@@ -171,7 +171,7 @@ function Avatar({ userId }: { userId: number | null | undefined }) {
   );
 }
 
-// ─── Epic card (grid item) ────────────────────────────────────────────────────
+// ─── Epic card ────────────────────────────────────────────────────────────────
 
 function EpicCard({
   epic,
@@ -204,7 +204,7 @@ function EpicCard({
         </div>
 
         <div className="mt-3">
-          <h3 className="text-sm font-semibold leading-snug text-slate-900 line-clamp-2">
+          <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-slate-900">
             {epic.title}
           </h3>
 
@@ -240,6 +240,9 @@ function EpicCard({
     </button>
   );
 }
+
+// ─── Ticket details dialog ────────────────────────────────────────────────────
+
 function TicketDetailsDialog({
   ticket,
   open,
@@ -258,7 +261,7 @@ function TicketDetailsDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={onOpenChange} modal={false}>
       <DialogContent className="sm:max-w-[640px] rounded-2xl">
         <DialogHeader>
           <div className="mb-2 flex flex-wrap items-center gap-2">
@@ -384,6 +387,7 @@ export default function EpicsBoardPage() {
   const [error, setError] = useState<string | null>(null);
 
   const [viewingEpic, setViewingEpic] = useState<Epic | null>(null);
+  const [viewingTicket, setViewingTicket] = useState<Ticket | null>(null);
 
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -441,7 +445,6 @@ export default function EpicsBoardPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="space-y-1">
           <p className="text-sm font-medium text-muted-foreground">
@@ -625,7 +628,6 @@ export default function EpicsBoardPage() {
         </div>
       )}
 
-      {/* Epic grid */}
       {loading ? (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -636,7 +638,7 @@ export default function EpicsBoardPage() {
           ))}
         </div>
       ) : sortedEpics.length === 0 ? (
-        <div className="flex min-h-[240px] flex-col items-center justify-center rounded-2xl border border-dashed text-sm text-muted-foreground gap-2">
+        <div className="flex min-h-[240px] flex-col items-center justify-center gap-2 rounded-2xl border border-dashed text-sm text-muted-foreground">
           <Layers className="h-8 w-8 opacity-30" />
           <span>No epics yet. Create one to get started.</span>
         </div>
@@ -647,13 +649,15 @@ export default function EpicsBoardPage() {
               key={epic.id}
               epic={epic}
               ticketCount={ticketCountByEpicId.get(epic.id) ?? 0}
-              onClick={() => setViewingEpic(epic)}
+              onClick={() => {
+                setViewingTicket(null);
+                setViewingEpic(epic);
+              }}
             />
           ))}
         </div>
       )}
 
-      {/* Tickets drawer — only mounted when an epic is selected */}
       {viewingEpic && (
         <Sheet
           open={!!viewingEpic}
@@ -664,22 +668,20 @@ export default function EpicsBoardPage() {
             }
           }}
         >
-          <SheetContent side="right" className="w-full sm:max-w-[540px] p-0">
+          <SheetContent side="right" className="w-full p-0 sm:max-w-[540px]">
             <div className="flex h-full flex-col">
-              {/* Drawer header tinted by priority */}
               <div
                 className={`border-b px-6 py-5 ${
                   priorityCardStyle(viewingEpic.priority).bg
                 }`}
               >
-                {/* Top accent */}
                 <div
-                  className={`absolute top-0 left-0 right-0 h-1 ${
+                  className={`absolute left-0 right-0 top-0 h-1 ${
                     priorityCardStyle(viewingEpic.priority).accent
                   }`}
                 />
 
-                <div className="flex flex-wrap items-center gap-2 mb-3">
+                <div className="mb-3 flex flex-wrap items-center gap-2">
                   <StatusBadge status={(viewingEpic as any).status} />
                   <PriorityBadge priority={viewingEpic.priority} />
                 </div>
@@ -697,7 +699,7 @@ export default function EpicsBoardPage() {
                       {viewingEpic.title}
                     </h2>
                     {viewingEpic.description && (
-                      <p className="mt-1 text-sm text-slate-500 leading-relaxed">
+                      <p className="mt-1 text-sm leading-relaxed text-slate-500">
                         {viewingEpic.description}
                       </p>
                     )}
@@ -719,13 +721,13 @@ export default function EpicsBoardPage() {
                 </div>
               </div>
 
-              {/* Ticket list */}
-              <div className="flex-1 overflow-y-auto px-6 py-4 bg-slate-50">
+              <div className="flex-1 overflow-y-auto bg-slate-50 px-6 py-4">
                 <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Tickets
                 </p>
+
                 {epicTickets.length === 0 ? (
-                  <div className="flex min-h-[160px] flex-col items-center justify-center rounded-xl border border-dashed bg-white text-sm text-muted-foreground gap-2">
+                  <div className="flex min-h-[160px] flex-col items-center justify-center gap-2 rounded-xl border border-dashed bg-white text-sm text-muted-foreground">
                     <TicketIcon className="h-6 w-6 opacity-30" />
                     <span>No tickets linked to this epic.</span>
                   </div>
@@ -742,9 +744,14 @@ export default function EpicsBoardPage() {
                 )}
               </div>
 
-              {/* Footer */}
-              <div className="border-t px-6 py-4 flex justify-end bg-white">
-                <Button variant="outline" onClick={() => setViewingEpic(null)}>
+              <div className="flex justify-end border-t bg-white px-6 py-4">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setViewingTicket(null);
+                    setViewingEpic(null);
+                  }}
+                >
                   Close
                 </Button>
               </div>
@@ -752,6 +759,7 @@ export default function EpicsBoardPage() {
           </SheetContent>
         </Sheet>
       )}
+
       <TicketDetailsDialog
         ticket={viewingTicket}
         open={!!viewingTicket}
