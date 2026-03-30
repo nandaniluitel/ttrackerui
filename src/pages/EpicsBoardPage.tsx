@@ -8,23 +8,10 @@ import {
   type EpicPriority,
   type EpicStatus,
 } from "@/features/epics/epics.api";
+import { fetchTickets, type Ticket } from "@/features/tickets/tickets.api";
 
 import { Button } from "@/components/ui/button";
 import { canManagePlanning } from "@/lib/rbac";
-
-import {
-  DndContext,
-  DragOverlay,
-  PointerSensor,
-  closestCenter,
-  useDraggable,
-  useDroppable,
-  useSensor,
-  useSensors,
-  type DragEndEvent,
-  type DragStartEvent,
-} from "@dnd-kit/core";
-import { CSS } from "@dnd-kit/utilities";
 
 import {
   Dialog,
@@ -41,41 +28,72 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 
-type EpicBoardStatus = "OPEN" | "DONE";
+import {
+  MoreHorizontal,
+  Ticket as TicketIcon,
+  User,
+  ChevronRight,
+} from "lucide-react";
 
-const EPIC_COLUMNS: Array<{
-  key: EpicBoardStatus;
-  title: string;
-  headerClass: string;
-}> = [
-  { key: "OPEN", title: "Open", headerClass: "bg-slate-100 text-slate-800" },
-  {
-    key: "DONE",
-    title: "Done",
-    headerClass: "bg-emerald-100 text-emerald-800",
-  },
-];
-
-function normalizeEpicStatus(raw: unknown): EpicBoardStatus {
-  const v = String(raw ?? "")
-    .trim()
-    .toUpperCase();
-  return v === "DONE" ? "DONE" : "OPEN";
-}
+// ─── helpers ────────────────────────────────────────────────────────────────
 
 function priorityTone(priority: unknown) {
-  const value = String(priority ?? "MEDIUM").toUpperCase();
-  if (value === "CRITICAL" || value === "HIGH")
-    return "bg-red-50 text-red-700 border-red-200";
-  if (value === "MEDIUM") return "bg-amber-50 text-amber-700 border-amber-200";
-  return "bg-slate-50 text-slate-700 border-slate-200";
+  const v = String(priority ?? "MEDIUM").toUpperCase();
+  if (v === "CRITICAL" || v === "HIGH")
+    return "bg-red-100 text-red-700 border-red-200";
+  if (v === "MEDIUM") return "bg-amber-100 text-amber-700 border-amber-200";
+  return "bg-slate-100 text-slate-600 border-slate-200";
 }
+
+function statusTone(status: unknown) {
+  const v = String(status ?? "").toUpperCase();
+  if (v === "DONE") return "bg-emerald-100 text-emerald-700 border-emerald-200";
+  if (v === "IN_PROGRESS" || v === "INPROGRESS")
+    return "bg-blue-100 text-blue-700 border-blue-200";
+  if (v === "BACKLOG") return "bg-slate-100 text-slate-600 border-slate-200";
+  return "bg-violet-100 text-violet-700 border-violet-200";
+}
+
+function prettyStatus(status: unknown) {
+  const v = String(status ?? "").toUpperCase();
+  if (v === "IN_PROGRESS" || v === "INPROGRESS") return "In Progress";
+  if (v === "DONE") return "Done";
+  if (v === "BACKLOG") return "Backlog";
+  if (v === "OPEN") return "Open";
+  return String(status ?? "—");
+}
+
+function prettyTicketStatus(s: Ticket["status"]) {
+  if (s === "BACKLOG") return "Backlog";
+  if (s === "TODO") return "To Do";
+  if (s === "IN_PROGRESS") return "In Progress";
+  if (s === "IN_REVIEW") return "In Review";
+  if (s === "DONE") return "Done";
+  return s;
+}
+
+function ticketStatusTone(s: Ticket["status"]) {
+  const v = String(s).toUpperCase();
+  if (v === "DONE") return "bg-emerald-100 text-emerald-700 border-emerald-200";
+  if (v === "IN_PROGRESS" || v === "IN_REVIEW")
+    return "bg-blue-100 text-blue-700 border-blue-200";
+  if (v === "TODO") return "bg-violet-100 text-violet-700 border-violet-200";
+  return "bg-slate-100 text-slate-600 border-slate-200";
+}
+
+function initials(userId: number | null | undefined) {
+  if (userId == null) return null;
+  return `U${userId}`;
+}
+
+// ─── sub-components ──────────────────────────────────────────────────────────
 
 function PriorityBadge({ priority }: { priority: EpicPriority }) {
   return (
     <span
-      className={`inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium capitalize ${priorityTone(
+      className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium capitalize ${priorityTone(
         priority
       )}`}
     >
@@ -84,148 +102,167 @@ function PriorityBadge({ priority }: { priority: EpicPriority }) {
   );
 }
 
-function Column({
-  title,
-  count,
-  headerClass,
-  isOver,
-  setRef,
-  children,
+function StatusBadge({ status }: { status: unknown }) {
+  return (
+    <span
+      className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${statusTone(
+        status
+      )}`}
+    >
+      {prettyStatus(status)}
+    </span>
+  );
+}
+
+function TicketStatusBadge({ status }: { status: Ticket["status"] }) {
+  return (
+    <span
+      className={`inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium ${ticketStatusTone(
+        status
+      )}`}
+    >
+      {prettyTicketStatus(status)}
+    </span>
+  );
+}
+
+function Avatar({ userId }: { userId: number | null | undefined }) {
+  const label = initials(userId);
+  if (!label) return null;
+  return (
+    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-indigo-100 text-xs font-bold text-indigo-700 ring-2 ring-white">
+      {label}
+    </div>
+  );
+}
+
+// ─── Epic row card ────────────────────────────────────────────────────────────
+
+function EpicRow({
+  epic,
+  ticketCount,
+  onClick,
 }: {
-  title: string;
-  count: number;
-  headerClass: string;
-  isOver: boolean;
-  setRef: (node: HTMLElement | null) => void;
-  children: React.ReactNode;
+  epic: Epic;
+  ticketCount: number;
+  onClick: () => void;
 }) {
   return (
-    <div className="min-w-[320px] flex-1">
-      <div
-        ref={setRef}
-        className={`rounded-xl border bg-white shadow-sm ${
-          isOver ? "ring-2 ring-slate-300" : ""
-        }`}
-      >
-        <div
-          className={`flex items-center justify-between rounded-t-xl px-4 py-3 ${headerClass}`}
-        >
-          <div className="font-medium">{title}</div>
-          <div className="rounded-md bg-white/80 px-2 py-0.5 text-xs font-semibold">
-            {count}
+    <button
+      type="button"
+      onClick={onClick}
+      className="group w-full text-left rounded-xl border bg-white px-5 py-4 shadow-sm transition hover:shadow-md hover:border-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+    >
+      <div className="flex items-start justify-between gap-4">
+        {/* left */}
+        <div className="flex min-w-0 flex-1 flex-col gap-2">
+          {/* title row */}
+          <div className="flex items-center gap-2">
+            <div className="min-w-0 truncate text-sm font-semibold text-slate-900">
+              {epic.title}
+            </div>
+          </div>
+
+          {/* description */}
+          {epic.description ? (
+            <p className="line-clamp-2 text-xs text-muted-foreground leading-relaxed">
+              {epic.description}
+            </p>
+          ) : null}
+
+          {/* badges row */}
+          <div className="flex flex-wrap items-center gap-2 pt-1">
+            <StatusBadge status={(epic as any).status} />
+            <PriorityBadge priority={epic.priority} />
+
+            <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 text-xs text-slate-600">
+              <TicketIcon className="h-3 w-3" />
+              {ticketCount} {ticketCount === 1 ? "ticket" : "tickets"}
+            </span>
+
+            {epic.assigneeUserId != null ? (
+              <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 text-xs text-slate-600">
+                <User className="h-3 w-3" />
+                User #{epic.assigneeUserId}
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 text-xs text-slate-400">
+                <User className="h-3 w-3" />
+                Unassigned
+              </span>
+            )}
           </div>
         </div>
 
-        <div className="min-h-[360px] p-3">
-          <div className="space-y-3">{children}</div>
+        {/* right */}
+        <div className="flex shrink-0 items-center gap-3 pt-0.5">
+          <Avatar userId={epic.assigneeUserId} />
+          <ChevronRight className="h-4 w-4 text-slate-300 transition group-hover:text-slate-500 group-hover:translate-x-0.5" />
         </div>
       </div>
-    </div>
+    </button>
   );
 }
 
-function EpicCard({ epic }: { epic: Epic }) {
+// ─── Ticket row inside drawer ─────────────────────────────────────────────────
+
+function TicketRow({ ticket }: { ticket: Ticket }) {
   return (
-    <div className="rounded-xl border bg-white p-4 shadow-sm transition hover:shadow-md">
-      <div className="text-sm font-medium leading-snug">{epic.title}</div>
-
-      <div className="mt-2 text-xs text-muted-foreground line-clamp-2">
-        {epic.description}
-      </div>
-
-      <div className="mt-3 flex items-center justify-between gap-2">
-        <PriorityBadge priority={epic.priority} />
-        <div className="text-xs text-muted-foreground">
-          {epic.assigneeUserId == null
-            ? "Unassigned"
-            : `User #${epic.assigneeUserId}`}
+    <div className="rounded-lg border bg-white px-4 py-3">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex flex-col gap-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-muted-foreground shrink-0">
+              TT-{ticket.id}
+            </span>
+            <span className="truncate text-sm font-medium text-slate-900">
+              {ticket.title}
+            </span>
+          </div>
+          {ticket.description ? (
+            <p className="line-clamp-1 text-xs text-muted-foreground">
+              {ticket.description}
+            </p>
+          ) : null}
         </div>
+        <TicketStatusBadge status={ticket.status} />
       </div>
     </div>
   );
 }
 
-function DraggableEpicCard({ epic }: { epic: Epic }) {
-  const { attributes, listeners, setNodeRef, transform, isDragging } =
-    useDraggable({
-      id: `epic:${epic.id}`,
-      data: { epicId: epic.id },
-    });
-
-  const style: React.CSSProperties = {
-    transform: CSS.Transform.toString(transform),
-    transition: isDragging ? undefined : "transform 200ms ease",
-    opacity: isDragging ? 0.6 : 1,
-  };
-
-  return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-      <EpicCard epic={epic} />
-    </div>
-  );
-}
-
-function DroppableEpicColumn({
-  colKey,
-  title,
-  count,
-  headerClass,
-  children,
-}: {
-  colKey: EpicBoardStatus;
-  title: string;
-  count: number;
-  headerClass: string;
-  children: React.ReactNode;
-}) {
-  const { setNodeRef, isOver } = useDroppable({
-    id: `epic-col:${colKey}`,
-    data: { epicStatus: colKey },
-  });
-
-  return (
-    <Column
-      title={title}
-      count={count}
-      headerClass={headerClass}
-      isOver={isOver}
-      setRef={setNodeRef}
-    >
-      {children}
-    </Column>
-  );
-}
+// ─── Main page ────────────────────────────────────────────────────────────────
 
 export default function EpicsBoardPage() {
   const canManage = canManagePlanning();
 
   const [epics, setEpics] = useState<Epic[]>([]);
+  const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [moveError, setMoveError] = useState<string | null>(null);
-  const [activeEpicId, setActiveEpicId] = useState<number | null>(null);
+  // Drawer
+  const [viewingEpic, setViewingEpic] = useState<Epic | null>(null);
 
   // Create epic dialog
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
-
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState<EpicPriority>("MEDIUM");
-  const [assigneeUserId, setAssigneeUserId] = useState<string>(""); // optional
-
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 6 } })
-  );
+  const [assigneeUserId, setAssigneeUserId] = useState<string>("");
 
   async function load() {
     setLoading(true);
     setError(null);
     try {
-      const data = await fetchEpics();
-      setEpics(data);
+      const [epicData, ticketData] = await Promise.all([
+        fetchEpics(),
+        fetchTickets(),
+      ]);
+      setEpics(epicData);
+      setTickets(ticketData);
     } catch (e: any) {
       const msg =
         e?.response?.data?.message ||
@@ -242,95 +279,41 @@ export default function EpicsBoardPage() {
     load();
   }, []);
 
-  const epicsByStatus = useMemo(() => {
-    const m = new Map<EpicBoardStatus, Epic[]>();
-    EPIC_COLUMNS.forEach((c) => m.set(c.key, []));
+  // Newest first
+  const sortedEpics = useMemo(
+    () => [...epics].sort((a, b) => b.id - a.id),
+    [epics]
+  );
 
-    for (const e of epics) {
-      const st = normalizeEpicStatus((e as any).status);
-      m.get(st)!.push(e);
-    }
+  // Tickets for the viewed epic
+  const epicTickets = useMemo(() => {
+    if (!viewingEpic) return [];
+    return tickets
+      .filter((t) => t.epicId === viewingEpic.id)
+      .sort((a, b) => a.id - b.id);
+  }, [tickets, viewingEpic]);
 
-    for (const [k, list] of m.entries()) {
-      list.sort((a, b) => a.id - b.id);
-      m.set(k, list);
+  // Ticket count per epic
+  const ticketCountByEpicId = useMemo(() => {
+    const m = new Map<number, number>();
+    for (const t of tickets) {
+      if (t.epicId != null) m.set(t.epicId, (m.get(t.epicId) ?? 0) + 1);
     }
     return m;
-  }, [epics]);
-
-  const activeEpic = useMemo(() => {
-    if (activeEpicId == null) return null;
-    return epics.find((e) => e.id === activeEpicId) ?? null;
-  }, [epics, activeEpicId]);
-
-  function handleDragStart(event: DragStartEvent) {
-    const epicId = (event.active.data.current as any)?.epicId as
-      | number
-      | undefined;
-    if (epicId) setActiveEpicId(epicId);
-  }
-
-  async function handleDragEnd(event: DragEndEvent) {
-    setActiveEpicId(null);
-
-    const epicId = (event.active.data.current as any)?.epicId as
-      | number
-      | undefined;
-    if (!epicId) return;
-
-    const over = event.over;
-    if (!over) return;
-
-    if (!String(over.id).startsWith("epic-col:")) return;
-
-    const target = (over.data.current as any)?.epicStatus as
-      | EpicBoardStatus
-      | undefined;
-    if (!target) return;
-
-    const current = epics.find((e) => e.id === epicId);
-    if (!current) return;
-
-    const currentStatus = normalizeEpicStatus((current as any).status);
-    if (currentStatus === target) return;
-
-    const prevStatus = (current as any).status as EpicStatus;
-
-    // optimistic
-    setMoveError(null);
-    setEpics((prev) =>
-      prev.map((e) => (e.id === epicId ? ({ ...e, status: target } as any) : e))
-    );
-
-    try {
-      await updateEpic(epicId, { status: target });
-    } catch (e: any) {
-      // rollback
-      setEpics((prev) =>
-        prev.map((e) =>
-          e.id === epicId ? ({ ...e, status: prevStatus } as any) : e
-        )
-      );
-
-      const msg =
-        e?.response?.data?.message ||
-        (typeof e?.response?.data === "string" ? e.response.data : null) ||
-        e?.message ||
-        "Failed to update epic status.";
-      setMoveError(String(msg));
-    }
-  }
+  }, [tickets]);
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="space-y-1">
           <p className="text-sm font-medium text-muted-foreground">
             Planning / Epics
           </p>
-          <h1 className="text-3xl font-semibold tracking-tight">Epics Board</h1>
+          <h1 className="text-3xl font-semibold tracking-tight">Epics</h1>
           <p className="text-sm text-muted-foreground">
-            Columns = epic status (OPEN / DONE). Drag to change status.
+            {sortedEpics.length} {sortedEpics.length === 1 ? "epic" : "epics"} —
+            click one to view its tickets
           </p>
         </div>
 
@@ -497,51 +480,101 @@ export default function EpicsBoardPage() {
         </div>
       ) : null}
 
-      {moveError ? (
-        <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-          {moveError}
+      {/* Epic list */}
+      {loading ? (
+        <div className="space-y-3">
+          {[1, 2, 3].map((i) => (
+            <div
+              key={i}
+              className="h-24 animate-pulse rounded-xl border bg-slate-100"
+            />
+          ))}
         </div>
-      ) : null}
+      ) : sortedEpics.length === 0 ? (
+        <div className="flex min-h-[240px] flex-col items-center justify-center rounded-xl border border-dashed text-sm text-muted-foreground gap-2">
+          <TicketIcon className="h-8 w-8 opacity-30" />
+          <span>No epics yet. Create one to get started.</span>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {sortedEpics.map((epic) => (
+            <EpicRow
+              key={epic.id}
+              epic={epic}
+              ticketCount={ticketCountByEpicId.get(epic.id) ?? 0}
+              onClick={() => setViewingEpic(epic)}
+            />
+          ))}
+        </div>
+      )}
 
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragStart={handleDragStart}
-        onDragEnd={handleDragEnd}
+      {/* Tickets drawer */}
+      <Sheet
+        open={!!viewingEpic}
+        onOpenChange={(o) => !o && setViewingEpic(null)}
       >
-        <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-          {EPIC_COLUMNS.map((col) => {
-            const list = epicsByStatus.get(col.key) ?? [];
-            return (
-              <DroppableEpicColumn
-                key={col.key}
-                colKey={col.key}
-                title={col.title}
-                count={list.length}
-                headerClass={col.headerClass}
-              >
-                {list.length === 0 ? (
-                  <div className="flex min-h-[220px] items-center justify-center rounded-xl border border-dashed text-sm text-muted-foreground">
-                    Drop epics here
+        <SheetContent side="right" className="w-full sm:max-w-[540px] p-0">
+          {viewingEpic ? (
+            <div className="flex h-full flex-col">
+              {/* Drawer header */}
+              <div className="border-b px-6 py-5">
+                <div className="flex flex-wrap items-center gap-2 mb-2">
+                  <StatusBadge status={(viewingEpic as any).status} />
+                  <PriorityBadge priority={viewingEpic.priority} />
+                </div>
+                <h2 className="text-lg font-semibold leading-snug text-slate-900">
+                  {viewingEpic.title}
+                </h2>
+                {viewingEpic.description ? (
+                  <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
+                    {viewingEpic.description}
+                  </p>
+                ) : null}
+
+                <div className="mt-3 flex items-center gap-3 text-xs text-muted-foreground">
+                  <span className="inline-flex items-center gap-1">
+                    <User className="h-3 w-3" />
+                    {viewingEpic.assigneeUserId != null
+                      ? `User #${viewingEpic.assigneeUserId}`
+                      : "Unassigned"}
+                  </span>
+                  <span className="inline-flex items-center gap-1">
+                    <TicketIcon className="h-3 w-3" />
+                    {epicTickets.length}{" "}
+                    {epicTickets.length === 1 ? "ticket" : "tickets"}
+                  </span>
+                </div>
+              </div>
+
+              {/* Ticket list */}
+              <div className="flex-1 overflow-y-auto px-6 py-4">
+                <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Tickets
+                </p>
+                {epicTickets.length === 0 ? (
+                  <div className="flex min-h-[160px] flex-col items-center justify-center rounded-xl border border-dashed text-sm text-muted-foreground gap-2">
+                    <TicketIcon className="h-6 w-6 opacity-30" />
+                    <span>No tickets linked to this epic.</span>
                   </div>
                 ) : (
-                  list.map((epic) => (
-                    <DraggableEpicCard key={epic.id} epic={epic} />
-                  ))
+                  <div className="space-y-2">
+                    {epicTickets.map((ticket) => (
+                      <TicketRow key={ticket.id} ticket={ticket} />
+                    ))}
+                  </div>
                 )}
-              </DroppableEpicColumn>
-            );
-          })}
-        </div>
+              </div>
 
-        <DragOverlay>
-          {activeEpic ? (
-            <div className="min-w-[320px]">
-              <EpicCard epic={activeEpic} />
+              {/* Footer */}
+              <div className="border-t px-6 py-4 flex justify-end">
+                <Button variant="outline" onClick={() => setViewingEpic(null)}>
+                  Close
+                </Button>
+              </div>
             </div>
           ) : null}
-        </DragOverlay>
-      </DndContext>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

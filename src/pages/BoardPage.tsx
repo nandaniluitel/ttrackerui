@@ -429,6 +429,8 @@ export default function BoardPage() {
         key: String(s.id),
         title: s.title,
         sprintId: s.id,
+        startDate: s.startDate,
+        endDate: s.endDate,
       })),
     ];
   }, [sprints]);
@@ -706,6 +708,17 @@ export default function BoardPage() {
           ) : null}
         </div>
       </div>
+      {(() => {
+        const activeSprint =
+          selectedSprint?.sprintId != null
+            ? sprints.find((s) => s.id === selectedSprint.sprintId)
+            : null;
+        return activeSprint?.startDate || activeSprint?.endDate ? (
+          <p className="text-sm text-muted-foreground">
+            {activeSprint.startDate ?? "—"} – {activeSprint.endDate ?? "—"}
+          </p>
+        ) : null;
+      })()}
 
       {error ? (
         <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
