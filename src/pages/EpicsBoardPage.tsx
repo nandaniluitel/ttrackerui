@@ -215,7 +215,7 @@ export default function EpicsBoardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Drawer
+  // Drawer — only set when user clicks an epic
   const [viewingEpic, setViewingEpic] = useState<Epic | null>(null);
 
   // Create dialog
@@ -296,7 +296,7 @@ export default function EpicsBoardPage() {
             {loading ? "Loading..." : "Refresh"}
           </Button>
 
-          {canManage ? (
+          {canManage && (
             <>
               <Button
                 onClick={() => {
@@ -311,148 +311,157 @@ export default function EpicsBoardPage() {
                 + New Epic
               </Button>
 
-              <Dialog open={open} onOpenChange={setOpen}>
-                <DialogContent className="sm:max-w-[560px]">
-                  <DialogHeader>
-                    <DialogTitle>Create epic</DialogTitle>
-                  </DialogHeader>
+              {/* Only mount Dialog when open — prevents invisible backdrop */}
+              {open && (
+                <Dialog open={open} onOpenChange={setOpen}>
+                  <DialogContent className="sm:max-w-[560px]">
+                    <DialogHeader>
+                      <DialogTitle>Create epic</DialogTitle>
+                    </DialogHeader>
 
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Title</label>
-                      <Input
-                        value={title}
-                        onChange={(e) => setTitle(e.target.value)}
-                        placeholder="Epic title"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Description</label>
-                      <Textarea
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        placeholder="Epic description"
-                      />
-                    </div>
-
-                    <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="space-y-4">
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">Priority</label>
-                        <Select
-                          value={priority}
-                          onValueChange={(v) => setPriority(v as EpicPriority)}
-                        >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="CRITICAL">Critical</SelectItem>
-                            <SelectItem value="HIGH">High</SelectItem>
-                            <SelectItem value="MEDIUM">Medium</SelectItem>
-                            <SelectItem value="LOW">Low</SelectItem>
-                          </SelectContent>
-                        </Select>
+                        <label className="text-sm font-medium">Title</label>
+                        <Input
+                          value={title}
+                          onChange={(e) => setTitle(e.target.value)}
+                          placeholder="Epic title"
+                        />
                       </div>
 
                       <div className="space-y-2">
                         <label className="text-sm font-medium">
-                          Assignee User ID
+                          Description
                         </label>
-                        <Input
-                          type="number"
-                          min={1}
-                          placeholder="optional"
-                          value={assigneeUserId}
-                          onChange={(e) => setAssigneeUserId(e.target.value)}
+                        <Textarea
+                          value={description}
+                          onChange={(e) => setDescription(e.target.value)}
+                          placeholder="Epic description"
                         />
                       </div>
+
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium">
+                            Priority
+                          </label>
+                          <Select
+                            value={priority}
+                            onValueChange={(v) =>
+                              setPriority(v as EpicPriority)
+                            }
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="CRITICAL">Critical</SelectItem>
+                              <SelectItem value="HIGH">High</SelectItem>
+                              <SelectItem value="MEDIUM">Medium</SelectItem>
+                              <SelectItem value="LOW">Low</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium">
+                            Assignee User ID
+                          </label>
+                          <Input
+                            type="number"
+                            min={1}
+                            placeholder="optional"
+                            value={assigneeUserId}
+                            onChange={(e) => setAssigneeUserId(e.target.value)}
+                          />
+                        </div>
+                      </div>
+
+                      {formError && (
+                        <div className="text-sm text-red-600">{formError}</div>
+                      )}
+
+                      <div className="flex justify-end gap-2 pt-2">
+                        <Button
+                          variant="outline"
+                          onClick={() => setOpen(false)}
+                          disabled={saving}
+                        >
+                          Cancel
+                        </Button>
+
+                        <Button
+                          disabled={saving}
+                          onClick={async () => {
+                            if (!title.trim()) {
+                              setFormError("Title is required.");
+                              return;
+                            }
+                            if (!description.trim()) {
+                              setFormError("Description is required.");
+                              return;
+                            }
+
+                            const assignee =
+                              assigneeUserId.trim() === ""
+                                ? null
+                                : Number(assigneeUserId);
+
+                            if (
+                              assignee !== null &&
+                              (Number.isNaN(assignee) || assignee <= 0)
+                            ) {
+                              setFormError(
+                                "Assignee must be a positive number (or blank)."
+                              );
+                              return;
+                            }
+
+                            setFormError(null);
+                            setSaving(true);
+
+                            try {
+                              await createEpic({
+                                title: title.trim(),
+                                description: description.trim(),
+                                priority,
+                                assigneeUserId: assignee,
+                              });
+
+                              const fresh = await fetchEpics();
+                              setEpics(fresh);
+                              setOpen(false);
+                            } catch (e: any) {
+                              const msg =
+                                e?.response?.data?.message ||
+                                (typeof e?.response?.data === "string"
+                                  ? e.response.data
+                                  : null) ||
+                                e?.message ||
+                                "Failed to create epic.";
+                              setFormError(String(msg));
+                            } finally {
+                              setSaving(false);
+                            }
+                          }}
+                        >
+                          {saving ? "Creating..." : "Create"}
+                        </Button>
+                      </div>
                     </div>
-
-                    {formError ? (
-                      <div className="text-sm text-red-600">{formError}</div>
-                    ) : null}
-
-                    <div className="flex justify-end gap-2 pt-2">
-                      <Button
-                        variant="outline"
-                        onClick={() => setOpen(false)}
-                        disabled={saving}
-                      >
-                        Cancel
-                      </Button>
-
-                      <Button
-                        disabled={saving}
-                        onClick={async () => {
-                          if (!title.trim()) {
-                            setFormError("Title is required.");
-                            return;
-                          }
-                          if (!description.trim()) {
-                            setFormError("Description is required.");
-                            return;
-                          }
-
-                          const assignee =
-                            assigneeUserId.trim() === ""
-                              ? null
-                              : Number(assigneeUserId);
-
-                          if (
-                            assignee !== null &&
-                            (Number.isNaN(assignee) || assignee <= 0)
-                          ) {
-                            setFormError(
-                              "Assignee must be a positive number (or blank)."
-                            );
-                            return;
-                          }
-
-                          setFormError(null);
-                          setSaving(true);
-
-                          try {
-                            await createEpic({
-                              title: title.trim(),
-                              description: description.trim(),
-                              priority,
-                              assigneeUserId: assignee,
-                            });
-
-                            const fresh = await fetchEpics();
-                            setEpics(fresh);
-                            setOpen(false);
-                          } catch (e: any) {
-                            const msg =
-                              e?.response?.data?.message ||
-                              (typeof e?.response?.data === "string"
-                                ? e.response.data
-                                : null) ||
-                              e?.message ||
-                              "Failed to create epic.";
-                            setFormError(String(msg));
-                          } finally {
-                            setSaving(false);
-                          }
-                        }}
-                      >
-                        {saving ? "Creating..." : "Create"}
-                      </Button>
-                    </div>
-                  </div>
-                </DialogContent>
-              </Dialog>
+                  </DialogContent>
+                </Dialog>
+              )}
             </>
-          ) : null}
+          )}
         </div>
       </div>
 
-      {error ? (
+      {error && (
         <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
           {error}
         </div>
-      ) : null}
+      )}
 
       {/* Epic list */}
       {loading ? (
@@ -482,13 +491,13 @@ export default function EpicsBoardPage() {
         </div>
       )}
 
-      {/* Tickets drawer */}
-      <Sheet
-        open={!!viewingEpic}
-        onOpenChange={(o) => !o && setViewingEpic(null)}
-      >
-        <SheetContent side="right" className="w-full sm:max-w-[540px] p-0">
-          {viewingEpic ? (
+      {/* Only mount Sheet when an epic is selected — prevents invisible backdrop blocking clicks */}
+      {viewingEpic && (
+        <Sheet
+          open={!!viewingEpic}
+          onOpenChange={(o) => !o && setViewingEpic(null)}
+        >
+          <SheetContent side="right" className="w-full sm:max-w-[540px] p-0">
             <div className="flex h-full flex-col">
               {/* Drawer header */}
               <div className="border-b px-6 py-5">
@@ -499,11 +508,11 @@ export default function EpicsBoardPage() {
                 <h2 className="text-lg font-semibold leading-snug text-slate-900">
                   {viewingEpic.title}
                 </h2>
-                {viewingEpic.description ? (
+                {viewingEpic.description && (
                   <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
                     {viewingEpic.description}
                   </p>
-                ) : null}
+                )}
 
                 <div className="mt-3 flex items-center gap-3 text-xs text-muted-foreground">
                   <span className="inline-flex items-center gap-1">
@@ -546,9 +555,9 @@ export default function EpicsBoardPage() {
                 </Button>
               </div>
             </div>
-          ) : null}
-        </SheetContent>
-      </Sheet>
+          </SheetContent>
+        </Sheet>
+      )}
     </div>
   );
 }
