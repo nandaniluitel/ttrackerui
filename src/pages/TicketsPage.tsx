@@ -529,20 +529,6 @@ export default function TicketsPage() {
                         return;
                       }
 
-                      const assignee =
-                        assigneeUserId.trim() === ""
-                          ? null
-                          : Number(assigneeUserId);
-                      if (
-                        assignee !== null &&
-                        (Number.isNaN(assignee) || assignee <= 0)
-                      ) {
-                        setFormError(
-                          "Assignee User ID must be a positive number."
-                        );
-                        return;
-                      }
-
                       // ✅ parse from dropdown values
                       const epic = epicId === "none" ? null : Number(epicId);
                       if (epic !== null && (Number.isNaN(epic) || epic <= 0)) {
@@ -570,7 +556,9 @@ export default function TicketsPage() {
                             description: description.trim(),
                             priority: formPriority,
                             storyPoints: sp,
-                            assigneeUserId: assignee,
+                            assigneeUserId: assigneeUserId
+                              ? Number(assigneeUserId)
+                              : null,
                             epicId: epic,
                             sprintId: sprint,
                           });
@@ -580,7 +568,9 @@ export default function TicketsPage() {
                             description: description.trim(),
                             priority: formPriority,
                             storyPoints: sp,
-                            assigneeUserId: assignee,
+                            assigneeUserId: assigneeUserId
+                              ? Number(assigneeUserId)
+                              : null,
                             epicId: epic,
                             sprintId: sprint,
                           });
@@ -678,9 +668,9 @@ export default function TicketsPage() {
             <SelectContent>
               <SelectItem value="all">All sprints</SelectItem>
               <SelectItem value="none">No sprint</SelectItem>
-              {sprintOptions.map((id) => (
-                <SelectItem key={id} value={String(id)}>
-                  {sprintTitleById.get(id) ?? `Sprint #${id}`}
+              {sprints.map((s) => (
+                <SelectItem key={s.id} value={String(s.id)}>
+                  {s.title}
                 </SelectItem>
               ))}
             </SelectContent>
