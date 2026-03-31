@@ -34,9 +34,9 @@ export default function AppLayout() {
     <div className="min-h-screen grid grid-cols-[260px_1fr] bg-background">
       {/* Sidebar */}
       <aside className="border-r bg-background">
-        <div className="h-14 px-4 flex items-center border-b">
+        <div className="h-16 px-4 flex items-center border-b">
           <svg
-            width="160"
+            width="200"
             viewBox="155 100 370 70"
             xmlns="http://www.w3.org/2000/svg"
           >
