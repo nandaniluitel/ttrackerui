@@ -37,7 +37,7 @@ export default function AppLayout() {
         <div className="h-16 px-4 flex items-center border-b">
           <svg
             width="200"
-            viewBox="155 100 370 70"
+            viewBox="0 0 680 220"
             xmlns="http://www.w3.org/2000/svg"
           >
             <style>
@@ -46,16 +46,16 @@ export default function AppLayout() {
     .logo-rest { font-family: Arial, sans-serif; font-weight: 500; font-size: 52px; fill: #111; letter-spacing: -1px; }
     .logo-sub { font-family: Arial, sans-serif; font-weight: 400; font-size: 12px; fill: #888; letter-spacing: 3.5px; }`}
             </style>
-            <text x="160" y="128" className="logo-highlight">
+            <text x="5" y="128" className="logo-highlight">
               T
             </text>
-            <text x="191" y="128" className="logo-dim">
+            <text x="36" y="128" className="logo-dim">
               t
             </text>
-            <text x="214" y="128" className="logo-rest">
+            <text x="59" y="128" className="logo-rest">
               racker
             </text>
-            <text x="161" y="155" className="logo-sub">
+            <text x="5" y="155" className="logo-sub">
               ISSUE TRACKING
             </text>
           </svg>
