@@ -514,6 +514,7 @@ export default function BoardPage() {
     try {
       await updateTicketStatus(ticketId, nextBackendStatus);
     } catch (e: any) {
+      console.log("error response:", e?.response?.data);
       setTickets((prev) =>
         prev.map((t) => (t.id === ticketId ? { ...t, status: prevStatus } : t))
       );
