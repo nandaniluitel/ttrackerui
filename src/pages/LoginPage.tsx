@@ -93,7 +93,7 @@ export default function LoginPage() {
   if (getToken()) return <Navigate to="/" replace />;
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6">
+    <div className="min-h-screen flex flex-col items-center justify-center p-8">
       <svg width="200" viewBox="0 0 380 170" xmlns="http://www.w3.org/2000/svg">
         <style>{`
           .logo-dim { font-family: Arial, sans-serif; font-weight: 500; font-size: 52px; fill: #888; letter-spacing: -1px; }
