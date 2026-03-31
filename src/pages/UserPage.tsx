@@ -55,18 +55,9 @@ export default function UsersPage() {
     setSelectedRole(u.role);
     setFormError(null);
   }
-  function getCurrentUser() {
-    const token = localStorage.getItem("ttracker_role"); // change key if yours is different
-    if (!token) return null;
-    try {
-      const payload = JSON.parse(atob(token.split(".")[1]));
-      return payload; // assumes payload has a `role` field
-    } catch {
-      return null;
-    }
-  }
-  const currentUser = getCurrentUser();
-  const isAdmin = currentUser?.role === "ADMIN";
+
+  const currentUserRole = localStorage.getItem("ttracker_role");
+  const isAdmin = currentUserRole === "ADMIN";
   async function handleChangeRole() {
     if (!editingUser) return;
     setSaving(true);

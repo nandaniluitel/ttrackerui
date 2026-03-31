@@ -70,8 +70,8 @@ export default function AppLayout() {
       </aside>
 
       {/* Main */}
-      <div className="flex flex-col">
-        <header className="h-14 border-b bg-background px-4 flex items-center justify-between">
+      <div className="flex flex-col ">
+        <header className="h-14 border-b bg-muted px-4 flex items-center justify-between">
           <div className="text-sm text-muted-foreground">Workspace</div>
 
           <div className="flex items-center gap-3">
