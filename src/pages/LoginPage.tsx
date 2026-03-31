@@ -95,7 +95,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-8">
       <svg
-        className="mb-16 ml-24"
+        className="mb-16 ml-30"
         width="400"
         viewBox="0 0 380 170"
         xmlns="http://www.w3.org/2000/svg"
