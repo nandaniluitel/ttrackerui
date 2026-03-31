@@ -36,14 +36,15 @@ export default function AppLayout() {
       <aside className="border-r bg-background">
         <div className="h-14 px-4 flex items-center border-b">
           <svg
-            width="120"
-            viewBox="0 0 680 220"
+            width="160"
+            viewBox="155 100 370 70"
             xmlns="http://www.w3.org/2000/svg"
           >
             <style>
               {`.logo-dim { font-family: Arial, sans-serif; font-weight: 500; font-size: 52px; fill: #888; letter-spacing: -1px; }
     .logo-highlight { font-family: Arial, sans-serif; font-weight: 500; font-size: 52px; fill: #7c3aed; letter-spacing: -1px; }
-    .logo-rest { font-family: Arial, sans-serif; font-weight: 500; font-size: 52px; fill: #111; letter-spacing: -1px; }`}
+    .logo-rest { font-family: Arial, sans-serif; font-weight: 500; font-size: 52px; fill: #111; letter-spacing: -1px; }
+    .logo-sub { font-family: Arial, sans-serif; font-weight: 400; font-size: 12px; fill: #888; letter-spacing: 3.5px; }`}
             </style>
             <text x="160" y="128" className="logo-highlight">
               T
@@ -53,6 +54,9 @@ export default function AppLayout() {
             </text>
             <text x="214" y="128" className="logo-rest">
               racker
+            </text>
+            <text x="161" y="155" className="logo-sub">
+              ISSUE TRACKING
             </text>
           </svg>
           <NavItem to="/profile" label="Profile" />
