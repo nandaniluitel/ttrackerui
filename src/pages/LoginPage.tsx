@@ -122,7 +122,7 @@ export default function LoginPage() {
       <form
         onSubmit={onSubmit}
         noValidate
-        className="w-full max-w-sm space-y-4 rounded-lg border p-6 "
+        className="w-full max-w-sm space-y-4 rounded-lg border p-6 mb-24 "
       >
         <h1 className="text-xl font-semibold">Login</h1>
 
