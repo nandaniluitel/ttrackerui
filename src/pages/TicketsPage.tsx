@@ -210,13 +210,13 @@ export default function TicketsPage() {
     return Array.from(set).sort((a, b) => a - b);
   }, [tickets]);
 
-  const sprintOptions = useMemo(() => {
-    const set = new Set<number>();
-    tickets.forEach((t) => {
-      if (t.sprintId) set.add(t.sprintId);
-    });
-    return Array.from(set).sort((a, b) => a - b);
-  }, [tickets]);
+  // const sprintOptions = useMemo(() => {
+  //   const set = new Set<number>();
+  //   tickets.forEach((t) => {
+  //     if (t.sprintId) set.add(t.sprintId);
+  //   });
+  //   return Array.from(set).sort((a, b) => a - b);
+  // }, [tickets]);
 
   const epicOptions = useMemo(() => {
     const set = new Set<number>();
