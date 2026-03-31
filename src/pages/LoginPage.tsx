@@ -95,7 +95,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-8">
       <svg
-        className="mb-12 ml-36"
+        className="mb-10 ml-36"
         width="400"
         viewBox="0 0 380 170"
         xmlns="http://www.w3.org/2000/svg"
@@ -122,7 +122,7 @@ export default function LoginPage() {
       <form
         onSubmit={onSubmit}
         noValidate
-        className="w-full max-w-sm space-y-4 rounded-lg border p-6 mb-24 "
+        className="w-full max-w-sm space-y-4 rounded-lg border p-6 mb-30 "
       >
         <h1 className="text-xl font-semibold">Login</h1>
 
