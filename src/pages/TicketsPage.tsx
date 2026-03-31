@@ -441,8 +441,8 @@ export default function TicketsPage() {
 
                         {editing?.epicId && editingEpicIsDone ? (
                           <SelectItem value={String(editing.epicId)} disabled>
-                            {(epicTitleById.get(editing.epicId) ??
-                              `Epic #${editing.epicId}`) + " (Done)"}
+                            {(epics.find((e) => e.id === editing.epicId)
+                              ?.title ?? `Epic #${editing.epicId}`) + " (Done)"}
                           </SelectItem>
                         ) : null}
 
