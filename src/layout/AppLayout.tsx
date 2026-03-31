@@ -35,7 +35,26 @@ export default function AppLayout() {
       {/* Sidebar */}
       <aside className="border-r bg-background">
         <div className="h-14 px-4 flex items-center border-b">
-          <div className="text-sm font-semibold tracking-tight">ttracker</div>
+          <svg
+            width="120"
+            viewBox="0 0 680 220"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <style>
+              {`.logo-dim { font-family: Arial, sans-serif; font-weight: 500; font-size: 52px; fill: #888; letter-spacing: -1px; }
+    .logo-highlight { font-family: Arial, sans-serif; font-weight: 500; font-size: 52px; fill: #7c3aed; letter-spacing: -1px; }
+    .logo-rest { font-family: Arial, sans-serif; font-weight: 500; font-size: 52px; fill: #111; letter-spacing: -1px; }`}
+            </style>
+            <text x="160" y="128" className="logo-highlight">
+              T
+            </text>
+            <text x="191" y="128" className="logo-dim">
+              t
+            </text>
+            <text x="214" y="128" className="logo-rest">
+              racker
+            </text>
+          </svg>
           <NavItem to="/profile" label="Profile" />
         </div>
 
