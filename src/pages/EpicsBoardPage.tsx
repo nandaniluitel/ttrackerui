@@ -42,41 +42,41 @@ function priorityCardStyle(priority: unknown) {
 
   if (v === "CRITICAL")
     return {
-      bg: "bg-rose-50",
-      border: "border-rose-100",
-      iconBg: "bg-rose-100",
+      bg: "bg-white",
+      border: "border-slate-200",
+      iconBg: "bg-rose-50",
       iconColor: "text-rose-400",
-      accent: "bg-rose-300",
-      dot: "bg-rose-300",
+      accent: "bg-rose-400",
+      dot: "bg-rose-400",
     };
 
   if (v === "HIGH")
     return {
-      bg: "bg-orange-50",
-      border: "border-orange-100",
-      iconBg: "bg-orange-100",
+      bg: "bg-white",
+      border: "border-slate-200",
+      iconBg: "bg-orange-50",
       iconColor: "text-orange-400",
-      accent: "bg-orange-300",
-      dot: "bg-orange-300",
+      accent: "bg-orange-400",
+      dot: "bg-orange-400",
     };
 
   if (v === "MEDIUM")
     return {
-      bg: "bg-blue-50",
-      border: "border-blue-100",
-      iconBg: "bg-blue-100",
+      bg: "bg-white",
+      border: "border-slate-200",
+      iconBg: "bg-blue-50",
       iconColor: "text-blue-400",
-      accent: "bg-blue-300",
-      dot: "bg-blue-300",
+      accent: "bg-blue-400",
+      dot: "bg-blue-400",
     };
 
   return {
-    bg: "bg-slate-50",
-    border: "border-slate-100",
-    iconBg: "bg-slate-100",
+    bg: "bg-white",
+    border: "border-slate-200",
+    iconBg: "bg-slate-50",
     iconColor: "text-slate-400",
-    accent: "bg-slate-200",
-    dot: "bg-slate-200",
+    accent: "bg-slate-300",
+    dot: "bg-slate-300",
   };
 }
 
