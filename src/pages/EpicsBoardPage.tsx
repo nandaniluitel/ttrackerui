@@ -86,10 +86,14 @@ function priorityBadgeStyle(priority: unknown) {
   // if (v === "HIGH") return "bg-orange-100 text-orange-700 border-orange-200";
   // if (v === "MEDIUM") return "bg-amber-100 text-amber-700 border-amber-200";
   // return "bg-slate-100 text-slate-600 border-slate-200";
-  if (v === "CRITICAL") return "bg-black/10 text-red-400 border-black/10";
-  if (v === "HIGH") return "bg-black/10 text-orange-400 border-black/10";
-  if (v === "MEDIUM") return "bg-black/10 text-blue-400 border-black/10";
-  return "bg-black/10 text-green-400 border-black/10";
+  // if (v === "CRITICAL") return "bg-black/10 text-red-400 border-black/10";
+  // if (v === "HIGH") return "bg-black/10 text-orange-400 border-black/10";
+  // if (v === "MEDIUM") return "bg-black/10 text-blue-400 border-black/10";
+  // return "bg-black/10 text-green-400 border-black/10";
+  if (v === "CRITICAL") return "bg-black/10 text-black/80 border-black/10";
+  if (v === "HIGH") return "bg-black/10 text-black/70 border-black/10";
+  if (v === "MEDIUM") return "bg-black/10 text-black/60 border-black/10";
+  return "bg-black/10 text-black/50 border-black/10";
 }
 
 function statusTone(status: unknown) {
