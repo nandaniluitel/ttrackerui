@@ -95,25 +95,21 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-8">
       <svg
-        className="mb-10 ml-36"
-        width="400"
-        viewBox="0 0 380 170"
+        className="mb-10 w-full max-w-sm"
+        viewBox="0 0 220 170"
         xmlns="http://www.w3.org/2000/svg"
       >
         <style>{`
-          .logo-dim { font-family: Arial, sans-serif; font-weight: 500; font-size: 52px; fill: #888; letter-spacing: -1px; }
-          .logo-highlight { font-family: Arial, sans-serif; font-weight: 500; font-size: 52px; fill: #7c3aed; letter-spacing: -1px; }
-          .logo-rest { font-family: Arial, sans-serif; font-weight: 500; font-size: 52px; fill: #111; letter-spacing: -1px; }
-          .logo-sub { font-family: Arial, sans-serif; font-weight: 400; font-size: 12px; fill: #888; letter-spacing: 3.5px; }
-        `}</style>
-        <text x="5" y="128" className="logo-highlight">
-          T
-        </text>
-        <text x="36" y="128" className="logo-dim">
-          t
-        </text>
-        <text x="59" y="128" className="logo-rest">
-          racker
+      .logo-base { font-family: Arial, sans-serif; font-weight: 500; font-size: 52px; letter-spacing: -1px; }
+      .logo-highlight { fill: #7c3aed; }
+      .logo-dim { fill: #888; }
+      .logo-rest { fill: #111; }
+      .logo-sub { font-family: Arial, sans-serif; font-weight: 400; font-size: 12px; fill: #888; letter-spacing: 3.5px; }
+    `}</style>
+        <text x="5" y="128" className="logo-base">
+          <tspan className="logo-highlight">T</tspan>
+          <tspan className="logo-dim">t</tspan>
+          <tspan className="logo-rest">racker</tspan>
         </text>
         <text x="5" y="155" className="logo-sub">
           ISSUE TRACKING
