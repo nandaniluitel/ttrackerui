@@ -30,6 +30,8 @@ import { fetchSprints, type Sprint } from "@/features/sprints/sprints.api";
 import { fetchEpics, type Epic } from "@/features/epics/epics.api";
 import { fetchUsers, type User } from "@/features/users/users.api";
 
+import { useSearchParams } from "react-router-dom";
+
 function keyFromId(id: number) {
   return `TT-${id}`;
 }
@@ -127,6 +129,16 @@ export default function TicketsPage() {
   const [formPriority, setFormPriority] =
     useState<Ticket["priority"]>("MEDIUM");
   const [formError, setFormError] = useState<string | null>(null);
+
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  //to search the create method
+  useEffect(() => {
+    if (searchParams.get("create") === "true") {
+      openCreateDialog();
+      setSearchParams({});
+    }
+  }, [searchParams]);
 
   // load tickets
   useEffect(() => {

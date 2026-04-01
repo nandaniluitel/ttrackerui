@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { getRole, logout } from "@/lib/auth";
 import { useState } from "react";
 import { Menu, UserCircle } from "lucide-react";
+import { Link } from "react-router-dom";
 
 function NavItem({
   to,
@@ -117,9 +118,11 @@ export default function AppLayout() {
                   Manage Sprints
                 </Button>
               ) : null}
-              <Button className="w-full justify-start bg-violet-600 hover:bg-violet-700 text-white">
-                Create Ticket
-              </Button>
+              <Link to="/tickets?create=true">
+                <Button className="w-full justify-start bg-grey-600 hover:bg-violet-700 text-white">
+                  Create Ticket
+                </Button>
+              </Link>
             </div>
           )}
         </div>
