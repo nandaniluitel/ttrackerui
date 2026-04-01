@@ -42,54 +42,54 @@ function priorityCardStyle(priority: unknown) {
 
   if (v === "CRITICAL")
     return {
-      bg: "bg-gradient-to-br from-pink-50 via-rose-50 to-red-100",
-      border: "border-rose-200",
+      bg: "bg-rose-50",
+      border: "border-rose-100",
       iconBg: "bg-rose-100",
-      iconColor: "text-rose-600",
-      accent: "bg-gradient-to-r from-pink-500 via-rose-500 to-red-500",
-      dot: "bg-rose-400",
+      iconColor: "text-rose-400",
+      accent: "bg-rose-300",
+      dot: "bg-rose-300",
     };
 
   if (v === "HIGH")
     return {
-      bg: "bg-gradient-to-br from-rose-50 via-pink-50 to-fuchsia-100",
-      border: "border-pink-200",
-      iconBg: "bg-pink-100",
-      iconColor: "text-pink-600",
-      accent: "bg-gradient-to-r from-rose-400 via-pink-500 to-fuchsia-500",
-      dot: "bg-pink-400",
+      bg: "bg-orange-50",
+      border: "border-orange-100",
+      iconBg: "bg-orange-100",
+      iconColor: "text-orange-400",
+      accent: "bg-orange-300",
+      dot: "bg-orange-300",
     };
 
   if (v === "MEDIUM")
     return {
-      bg: "bg-gradient-to-br from-amber-50 to-amber-100",
-      border: "border-amber-200",
-      iconBg: "bg-amber-100",
-      iconColor: "text-amber-600",
-      accent: "bg-amber-500",
-      dot: "bg-amber-400",
+      bg: "bg-blue-50",
+      border: "border-blue-100",
+      iconBg: "bg-blue-100",
+      iconColor: "text-blue-400",
+      accent: "bg-blue-300",
+      dot: "bg-blue-300",
     };
 
   return {
-    bg: "bg-gradient-to-br from-slate-50 to-slate-100",
-    border: "border-slate-200",
+    bg: "bg-slate-50",
+    border: "border-slate-100",
     iconBg: "bg-slate-100",
-    iconColor: "text-slate-500",
-    accent: "bg-slate-400",
-    dot: "bg-slate-300",
+    iconColor: "text-slate-400",
+    accent: "bg-slate-200",
+    dot: "bg-slate-200",
   };
 }
 
 function priorityBadgeStyle(priority: unknown) {
   const v = String(priority ?? "MEDIUM").toUpperCase();
-  // if (v === "CRITICAL") return "bg-red-100 text-red-700 border-red-200";
-  // if (v === "HIGH") return "bg-orange-100 text-orange-700 border-orange-200";
-  // if (v === "MEDIUM") return "bg-amber-100 text-amber-700 border-amber-200";
-  // return "bg-slate-100 text-slate-600 border-slate-200";
-  if (v === "CRITICAL") return "bg-black/10 text-red-400 border-black/10";
-  if (v === "HIGH") return "bg-black/10 text-orange-400 border-black/10";
-  if (v === "MEDIUM") return "bg-black/10 text-blue-400 border-black/10";
-  return "bg-black/10 text-green-400 border-black/10";
+  if (v === "CRITICAL") return "bg-red-100 text-red-700 border-red-200";
+  if (v === "HIGH") return "bg-orange-100 text-orange-700 border-orange-200";
+  if (v === "MEDIUM") return "bg-amber-100 text-amber-700 border-amber-200";
+  return "bg-slate-100 text-slate-600 border-slate-200";
+  // if (v === "CRITICAL") return "bg-black/10 text-red-400 border-black/10";
+  // if (v === "HIGH") return "bg-black/10 text-orange-400 border-black/10";
+  // if (v === "MEDIUM") return "bg-black/10 text-blue-400 border-black/10";
+  // return "bg-black/10 text-green-400 border-black/10";
   // if (v === "CRITICAL") return "bg-black/10 text-black/80 border-black/10";
   // if (v === "HIGH") return "bg-black/10 text-black/70 border-black/10";
   // if (v === "MEDIUM") return "bg-black/10 text-black/60 border-black/10";
