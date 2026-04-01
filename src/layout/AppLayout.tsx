@@ -32,6 +32,13 @@ function NavItem({
     </NavLink>
   );
 }
+export function removeToken() {
+  localStorage.removeItem("token");
+}
+
+export function removeRole() {
+  localStorage.removeItem("role");
+}
 
 export default function AppLayout() {
   const nav = useNavigate();
@@ -40,6 +47,8 @@ export default function AppLayout() {
 
   function handleLogout() {
     logout();
+    removeToken();
+    removeRole();
     nav("/login");
   }
 
