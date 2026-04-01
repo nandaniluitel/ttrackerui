@@ -82,10 +82,14 @@ function priorityCardStyle(priority: unknown) {
 
 function priorityBadgeStyle(priority: unknown) {
   const v = String(priority ?? "MEDIUM").toUpperCase();
-  if (v === "CRITICAL") return "bg-red-100 text-red-700 border-red-200";
-  if (v === "HIGH") return "bg-orange-100 text-orange-700 border-orange-200";
-  if (v === "MEDIUM") return "bg-amber-100 text-amber-700 border-amber-200";
-  return "bg-slate-100 text-slate-600 border-slate-200";
+  // if (v === "CRITICAL") return "bg-red-100 text-red-700 border-red-200";
+  // if (v === "HIGH") return "bg-orange-100 text-orange-700 border-orange-200";
+  // if (v === "MEDIUM") return "bg-amber-100 text-amber-700 border-amber-200";
+  // return "bg-slate-100 text-slate-600 border-slate-200";
+  if (v === "CRITICAL") return "bg-black/10 text-red-400 border-black/10";
+  if (v === "HIGH") return "bg-black/10 text-orange-400 border-black/10";
+  if (v === "MEDIUM") return "bg-black/10 text-blue-400 border-black/10";
+  return "bg-black/10 text-green-400 border-black/10";
 }
 
 function statusTone(status: unknown) {
