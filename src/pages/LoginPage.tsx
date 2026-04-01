@@ -95,23 +95,23 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-8">
       <svg
-        className="mb-10 w-full max-w-sm"
-        viewBox="0 0 384 170"
+        className="mb-6 w-full max-w-sm"
+        viewBox="0 0 384 80"
         xmlns="http://www.w3.org/2000/svg"
       >
         <style>{`
-    .logo-base { font-family: Arial, sans-serif; font-weight: 500; font-size: 52px; letter-spacing: -1px; }
+    .logo-base { font-family: Arial, sans-serif; font-weight: 500; font-size: 36px; letter-spacing: -1px; }
     .logo-highlight { fill: #7c3aed; }
     .logo-dim { fill: #888; }
     .logo-rest { fill: #111; }
-    .logo-sub { font-family: Arial, sans-serif; font-weight: 400; font-size: 12px; fill: #888; letter-spacing: 3.5px; }
+    .logo-sub { font-family: Arial, sans-serif; font-weight: 400; font-size: 10px; fill: #888; letter-spacing: 3.5px; }
   `}</style>
-        <text x="192" y="115" textAnchor="middle" className="logo-base">
+        <text x="192" y="42" textAnchor="middle" className="logo-base">
           <tspan className="logo-highlight">T</tspan>
           <tspan className="logo-dim">t</tspan>
           <tspan className="logo-rest">racker</tspan>
         </text>
-        <text x="192" y="145" textAnchor="middle" className="logo-sub">
+        <text x="192" y="65" textAnchor="middle" className="logo-sub">
           ISSUE TRACKING
         </text>
       </svg>
