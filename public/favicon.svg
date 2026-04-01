@@ -1,3 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100 pl-3">
+<!-- <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100 pl-3">
   <text y=".9em" font-size="90" font-family="Arial" font-weight="500" fill="#7c3aed">T</text>
-</svg>
+</svg> -->
+<text x="15" y="128" className="logo-base">
+  <tspan className="logo-highlight">T</tspan><tspan className="logo-dim">t</tspan><tspan className="logo-rest">racker</tspan>
+</text>
+<text x="15" y="155" className="logo-sub">
+  ISSUE TRACKING
+</text>
