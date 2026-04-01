@@ -46,7 +46,7 @@ export default function AppLayout() {
     <div className="min-h-screen flex bg-slate-50">
       {/* Sidebar */}
       <aside
-        className={`bg-slate-900 flex flex-col transition-all duration-300 overflow-hidden shrink-0 ${
+        className={`bg-gray-50 border-r border-gray-100 flex flex-col transition-all duration-300 overflow-hidden shrink-0 ${
           sidebarOpen ? "w-[260px]" : "w-12"
         }`}
       >
