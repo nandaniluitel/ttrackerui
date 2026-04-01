@@ -119,7 +119,7 @@ export default function AppLayout() {
                 </Button>
               ) : null}
               <Link to="/tickets?create=true">
-                <Button className="w-full justify-start bg-grey-600 hover:bg-violet-700 text-white">
+                <Button className="w-full justify-start bg-slate-100 hover:bg-slate-200 text-black">
                   Create Ticket
                 </Button>
               </Link>
