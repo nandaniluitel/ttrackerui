@@ -95,7 +95,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-8">
       <svg
-        className="mb-6 w-full max-w-sm"
+        className="mb-4 w-full max-w-sm"
         viewBox="0 0 384 80"
         xmlns="http://www.w3.org/2000/svg"
       >
@@ -108,7 +108,7 @@ export default function LoginPage() {
   `}</style>
         <text x="192" y="42" textAnchor="middle" className="logo-base">
           <tspan className="logo-highlight">T</tspan>
-          <tspan className="logo-dim">t</tspan>
+          <tspan className="logo-rest">t</tspan>
           <tspan className="logo-rest">racker</tspan>
         </text>
         <text x="192" y="65" textAnchor="middle" className="logo-sub">
