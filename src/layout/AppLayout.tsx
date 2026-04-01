@@ -21,8 +21,8 @@ function NavItem({
         [
           "block rounded-md px-3 py-2 text-sm transition",
           isActive
-            ? "bg-violet-600 text-white font-medium"
-            : "text-slate-400 hover:bg-slate-800 hover:text-white",
+            ? "bg-violet-50 text-violet-700 border-l-2 border-violet-600"
+            : "text-slate-500 hover:bg-slate-100 hover:text-slate-800",
           collapsed ? "text-transparent select-none" : "",
         ].join(" ")
       }
