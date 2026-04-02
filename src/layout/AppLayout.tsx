@@ -47,12 +47,15 @@ export default function AppLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   async function handleLogout() {
+    console.log("logging out...");
     try {
-      await api.post("/auth/logout");
+      const res = await api.post("/auth/logout");
+      console.log("logout response:", res.status);
     } catch (e) {
-      // ignore, still log out locally
+      console.log("logout error:", e);
     } finally {
-      logout();
+      removeToken();
+      removeRole();
       nav("/login");
     }
   }
