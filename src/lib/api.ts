@@ -9,7 +9,10 @@ api.interceptors.request.use((config) => {
   const url = config.url ?? "";
 
   // Skip auth endpoints so an old/invalid token can't block login
-  if (!url.startsWith("/auth/")) {
+  const skipAuth =
+    url.startsWith("/auth/login") || url.startsWith("/auth/register");
+
+  if (!skipAuth) {
     const token = getToken();
     if (token) {
       config.headers = config.headers ?? {};

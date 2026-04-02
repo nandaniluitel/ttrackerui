@@ -4,6 +4,7 @@ import { getRole, logout } from "@/lib/auth";
 import { useState } from "react";
 import { Menu, UserCircle } from "lucide-react";
 import { Link } from "react-router-dom";
+import { api } from "@/lib/api";
 
 function NavItem({
   to,
@@ -45,11 +46,16 @@ export default function AppLayout() {
   const role = getRole();
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
-  function handleLogout() {
-    logout();
-    removeToken();
-    removeRole();
-    nav("/login");
+  async function handleLogout() {
+    try {
+      await api.post("/auth/logout");
+    } catch (e) {
+      // ignore, still log out locally
+    } finally {
+      removeToken();
+      removeRole();
+      nav("/login");
+    }
   }
 
   return (
