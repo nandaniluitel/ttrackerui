@@ -1,6 +1,6 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { getRole, logout } from "@/lib/auth";
+import { getRole } from "@/lib/auth";
 import { useState } from "react";
 import { Menu, UserCircle } from "lucide-react";
 import { Link } from "react-router-dom";
