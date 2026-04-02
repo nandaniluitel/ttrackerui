@@ -52,8 +52,7 @@ export default function AppLayout() {
     } catch (e) {
       // ignore, still log out locally
     } finally {
-      removeToken();
-      removeRole();
+      logout();
       nav("/login");
     }
   }
