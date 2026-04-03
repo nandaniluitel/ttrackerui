@@ -4,7 +4,7 @@ import { getRole } from "@/lib/auth";
 import { useState } from "react";
 import { Menu, UserCircle } from "lucide-react";
 import { Link } from "react-router-dom";
-import { api } from "@/lib/api";
+// import { api } from "@/lib/api";
 
 function NavItem({
   to,
@@ -48,16 +48,15 @@ export default function AppLayout() {
 
   async function handleLogout() {
     console.log("logging out...");
-    try {
-      const res = await api.post("/auth/logout");
-      console.log("logout response:", res.status);
-    } catch (e) {
-      //
-    } finally {
-      removeToken();
-      removeRole();
-      nav("/login");
-    }
+    // try {
+    //   const res = await api.post("/auth/logout");
+    //   console.log("logout response:", res.status);
+    // } catch (e) {
+    //   //
+    // } finally {
+    removeToken();
+    removeRole();
+    nav("/login");
   }
 
   return (
