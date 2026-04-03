@@ -48,15 +48,15 @@ export default function AppLayout() {
 
   async function handleLogout() {
     console.log("logging out...");
+    removeToken();
+    removeRole();
+    nav("/login");
     // try {
     //   const res = await api.post("/auth/logout");
     //   console.log("logout response:", res.status);
     // } catch (e) {
     //   //
     // } finally {
-    removeToken();
-    removeRole();
-    nav("/login");
   }
 
   return (
