@@ -52,7 +52,7 @@ export default function AppLayout() {
       const res = await api.post("/auth/logout");
       console.log("logout response:", res.status);
     } catch (e) {
-      console.log("logout error:", e);
+      //
     } finally {
       removeToken();
       removeRole();
